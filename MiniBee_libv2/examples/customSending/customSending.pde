@@ -3,13 +3,13 @@
 /// in the header file of the MiniBee you can disable some options to save
 /// space on the MiniBee. If you don't the board may not work as it runs
 /// out of RAM.
-#include <MiniBee.h>
+#include <MiniBeeV2.h>
 
 /// in our example we are using the capacitive sensing library to use sensors
 /// not supported by default in our library
 #include <CapSense.h>
 
-MiniBee Bee = MiniBee();
+MiniBeeV2 Bee = MiniBeeV2();
 
 /// using pin 10 as send pin, and pins 11, 12 and 13 as sensing pins
  // 10M resistor between pins 4 & 6, pin 6 is sensor pin, add a wire and or foil

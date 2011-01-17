@@ -3,7 +3,7 @@
 /// in the header file of the MiniBee you can disable some options to save
 /// space on the MiniBee. If you don't the board may not work as it runs
 /// out of RAM.
-#include <MiniBee.h>
+#include <MiniBeeV2.h>
 
 /// this example shows how to use a stepper motor to be controlled from custom pins
 #include <Stepper.h>
@@ -11,7 +11,7 @@
 /// our motor has 7.5 degree steps, so 48 per full rotation
 #define STEPS 48
 
-MiniBee Bee = MiniBee();
+MiniBeeV2 Bee = MiniBeeV2();
 
 /// stepper motor will be attached to pin 12 and 13
 Stepper stepper(STEPS, 12, 13);

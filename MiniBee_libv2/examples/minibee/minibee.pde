@@ -1,8 +1,8 @@
 #include <Wire.h>
 #include <ADXL345.h>
-#include <MiniBee.h>
+#include <MiniBeeV2.h>
 
-MiniBee Bee = MiniBee();
+MiniBeeV2 Bee = MiniBeeV2();
 
 void setup() {
   Bee.begin(19200);
