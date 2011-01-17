@@ -1,7 +1,7 @@
 // #include <ADXL345.h>
 
-#ifndef MiniBee_h
-#define MiniBee_h
+#ifndef MiniBeeV2_h
+#define MiniBeeV2_h
 
 #define MINIBEE_REVISION 'B'
 #define MINIBEE_LIBVERSION 2
@@ -54,9 +54,9 @@ enum MiniBeePinConfig {
 //  	void USART_RX_vect(void) __attribute__ ((signal));
 // }
 
-class MiniBee {
+class MiniBeeV2 {
 	public:
-		MiniBee();	//constructor
+		MiniBeeV2();	//constructor
 
 		void (*customMsgFunc)(char *);// = NULL;
 		void (*dataMsgFunc)(char *);// = NULL;
