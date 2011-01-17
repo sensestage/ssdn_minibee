@@ -54,7 +54,7 @@ enum TWIDeviceConfig {
   LIS302DL=11,
   BMP085=20,
   TMP102=30
-}
+};
 
 // extern "C" {
 //  	void PCINT0_vect(void) __attribute__ ((signal));

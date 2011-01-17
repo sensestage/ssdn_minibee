@@ -52,15 +52,15 @@ void LIS302DL::setup(){
       //-------end LIS302DL setup --------------
 }
 
-void LIS302DL::read( uint8_t* accx, uint8_t* accy, uint8_t* accz ){
+void LIS302DL::read( int* accx, int* accy, int* accz ){
     /// reading LIS302DL
-    accx = readTWI( LIS302DL_addres1, LIS302DL_accelX, 1 ) + 128 % 256;
-    accy = readTWI( LIS302DL_addres1, LIS302DL_accelY, 1 ) + 128 % 256;
-    accz = readTWI( LIS302DL_addres1, LIS302DL_accelZ, 1 ) + 128 % 256;
+    *accx = readTWI( LIS302DL_addres1, LIS302DL_accelX, 1 ) + 128 % 256;
+    *accy = readTWI( LIS302DL_addres1, LIS302DL_accelY, 1 ) + 128 % 256;
+    *accz = readTWI( LIS302DL_addres1, LIS302DL_accelZ, 1 ) + 128 % 256;
 }
 
 int LIS302DL::readTWI(int address, int bytes) {
-	i = 0;
+	uint8_t i = 0;
 	int twi_reading[bytes];
 	Wire.requestFrom(address, bytes);
 	while(Wire.available()) {   
@@ -72,7 +72,7 @@ int LIS302DL::readTWI(int address, int bytes) {
 
 ///read a specific register on a particular device.
 int LIS302DL::readTWI(int address, int reg, int bytes) {
-	i = 0;
+	uint8_t i = 0;
 	int twi_reading[bytes];
 	Wire.beginTransmission(address);
 	Wire.send(reg);                   //set x register

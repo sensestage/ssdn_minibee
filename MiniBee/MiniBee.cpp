@@ -1,20 +1,20 @@
 #include "MiniBee.h"
 
-#if MINIBEE_ENABLE_TWI == 1
+// #if MINIBEE_ENABLE_TWI == 1
 #include <Wire.h>
 
-  #if MINIBEE_REVISION == 'B'
-  #include <ADXL345.h>
-  ADXL345 accelADXL;
-  #include <LIS302DL.h>
-  LIS302DL accelLIS;
-  #include <TMP102.h>
-  TMP102 temp102;
-  #include <BMP085.h>
-  BMP085 bmp085;
-  #endif
+// #if MINIBEE_REVISION == 'B'
+#include <ADXL345.h>
+ADXL345 accelADXL;
+#include <LIS302DL.h>
+LIS302DL accelLIS;
+#include <TMP102.h>
+TMP102 temp102;
+#include <BMP085.h>
+BMP085 bmp085;
+// #endif
 
-#endif
+// #endif
 
 
 // #include <NewSoftSerial.h>
@@ -654,7 +654,7 @@ uint8_t MiniBee::readSensors( uint8_t db ){
     // read I2C/two wire interface for all devices
     int dbinc;
     if ( twiOn ){
-	dbinc = readTWI( db );
+	dbinc = readTWIdevices( db );
 	db += dbinc;
     }
 #endif
@@ -857,7 +857,7 @@ void MiniBee::parseConfig(void){
 #if MINIBEE_ENABLE_TWI == 1
 	if ( twiOn ){
 	  nr_twi_devices = config[PIN_CONFIG_BYTES+4];
-	  twi_devices = (char*)malloc(sizeof(char) * nr_twi_devices);
+	  twi_devices = (uint8_t*)malloc(sizeof(uint8_t) * nr_twi_devices);
 	  for(i = 0;i < nr_twi_devices; i++ ){
 	    twi_devices[i] = config[PIN_CONFIG_BYTES+5+i];
 	    switch( twi_devices[i] ){
@@ -865,7 +865,7 @@ void MiniBee::parseConfig(void){
 		datasize += 6;
 		break;
 	      case LIS302DL:
-		datasize += 3;
+		datasize += 6;
 		break;
 	      case BMP085:
 		datasize += 4;
@@ -948,10 +948,16 @@ void MiniBee::setupTWIdevices(void){
 		accelLIS.setup();
 		break;
 	      case BMP085:
-		
+		bmp085.init();
+		//bmp085.init(MODE_STANDARD, 1018.50, false);  //  false = using hpa units
+                  // this initialization is useful for normalizing pressure to specific datum.
+                  // OR setting current local hPa information from a weather station/local airport (QNH).
+		//bmp085.init(MODE_STANDARD, 250.0, true);  // true = using meter units
+                  // this initialization is useful if current altitude is known,
+                  // pressure will be calculated based on TruePressure and known altitude.
 		break;
 	      case TMP102:
-		
+		// no setup needed
 		break;
 	    }
 	}
@@ -962,11 +968,12 @@ int MiniBee::readTWIdevices( int dboff ){
 	
 	int accx, accy, accz;
 	unsigned int accx2, accy2, accz2;
+	float bmp;
 
 	for(i = 0;i < nr_twi_devices; i++ ){
 	  switch( twi_devices[i] ){
 	      case ADXL345:
-		accel.readAccel( &accx, &accy, &accz );
+		accelADXL.readAccel( &accx, &accy, &accz );
 		accx2 = (unsigned int) (accx + 4096); // from twos complement signed int to unsigned int
 		accy2 = (unsigned int) (accy + 4096); // from twos complement signed int to unsigned int
 		accz2 = (unsigned int) (accz + 4096); // from twos complement signed int to unsigned int
@@ -977,15 +984,30 @@ int MiniBee::readTWIdevices( int dboff ){
 		dbplus =+ 6;
 		break;
 	      case LIS302DL:
-		accelLIS.read( data[dboff], data[dboff+1], data[dboff+2] );
-		dbplus += 3;
-		dboff += 3;
+		accelLIS.read( accx, accy, accz );
+		dataFromInt( accx, dboff );
+		dataFromInt( accy, dboff+2 );
+		dataFromInt( accz, dboff+4 );
+		dbplus += 6;
+		dboff += 6;
 		break;
 	      case BMP085:
-		
+		bmp085.getTemperature( &bmp );
+		accx = (int) (bmp * 10 + 2730); // temperature in Kelvin
+		bmp085.getPressure( &bmp );
+		accy = (int) (bmp * 10); // pressure in hpascal * 10
+		bmp085.getAltitude( &bmp );
+		accz = (int) (bmp * 100 ); // altitude in centimeters
+		dataFromInt( accx, dboff );
+		dataFromInt( accy, dboff+2 );
+		dataFromInt( accz, dboff+4 );
+		dbplus += 6;
+		dboff += 6;
 		break;
 	      case TMP102:
-		
+		accx = temp102.readTemp();
+		dataFromInt( accx, dboff );
+		dboff += 2;
 		break;
 	    }
 	}

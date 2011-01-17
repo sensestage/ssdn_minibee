@@ -14,25 +14,31 @@
  ***************************************************************************/
 #include "WProgram.h"
 
-#ifndef LIS302DL_h
-#define LIS302DL_h
+#ifndef TMP102_h
+#define TMP102_h
 
 /* ------- Register names ------- */
 
-#define LIS302DL_addres1 0x1C
+#define TMP102_addres1 0x92 // assume ADR0 is tied to VCC
+// #define TMP102_addres2 0x92 // assume ADR0 is tied to VCC
 // #define LIS302DL_addres2 0x1D // ??? check!
 
-#define LIS302DL_accelX 0x29
-#define LIS302DL_accelY 0x2B
-#define LIS302DL_accelZ 0x2D
+#define TMP102_RD	0x93
+#define TMP102_WR	0x92 //Assume ADR0 is tied to VCC
+#define TMP102_REG 	0x00
 
+#define TMP102_CONF	0x01
+#define TMP102_LOW	0x02
+#define TMP102_HIGH	0x03
 
-class LIS302DL
+class TMP102
 {
 public:
-  LIS302DL();
+  TMP102(){};
   void setup();
-  void read( int* accx, int* accy, int* accz );
+  int readTemp();
+  int readLow();
+  int readHigh();
 
 private:
   int readTWI(int address, int bytes);
@@ -40,5 +46,4 @@ private:
 //   byte _buff[6] ;    //6 bytes buffer for saving data read from the device
 };
 
-#endif // LIS302DL_h
-
+#endif // TMP102_h
