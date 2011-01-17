@@ -109,7 +109,37 @@ enum MiniBeePinConfig {
   Ping,
   Custom=100
 }
-\end{verbatim} 
+\end{verbatim}
+
+\paragraph{Version 2:}
+pins 18 and 19 are not relevant.
+
+\paragraph{Version 3:}
+Two wire interface supports various devices, which are selected after the 19 pin configuration bytes.
+
+\begin{center}
+\begin{tabular}{ll}
+msg time interval & 2 bytes (interval in ms) \\
+samples per message & 1 byte \\
+19 bytes pin configuration& 1 byte each \\
+number of I2C devices & 1 byte \\
+N x I2C device ID & 1 byte each
+% *motor steps & 2 bytes & \\
+\end{tabular}
+\end{center}
+
+
+\begin{verbatim}
+enum TWIDeviceConfig { 
+  ADXL345=10,
+  LIS302DL=11,
+  BMP085=20,
+  TMP102=30
+}
+\end{verbatim}
+
+
+
 %   StepMotorPin1, StepMotorPin2,
 
 % \begin{center}
