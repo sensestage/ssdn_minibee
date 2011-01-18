@@ -37,6 +37,17 @@
 #define NRPINS 19
 #endif
 
+#if MINIBEE_ENABLE_TWI == 1
+#include <Wire.h>
+
+#include <ADXL345.h>
+#include <LIS302DL.h>
+#include <TMP102.h>
+#include <BMP085.h>
+
+#endif
+
+
 
 enum MiniBeePinConfig { 
   NotUsed,
@@ -50,10 +61,10 @@ enum MiniBeePinConfig {
 };
 
 enum TWIDeviceConfig { 
-  ADXL345=10,
-  LIS302DL=11,
-  BMP085=20,
-  TMP102=30
+  TWI_ADXL345=10,
+  TWI_LIS302DL=11,
+  TWI_BMP085=20,
+  TWI_TMP102=30
 };
 
 // extern "C" {
@@ -317,6 +328,11 @@ class MiniBee {
 #endif*/
 		uint8_t * twi_devices;
 		uint8_t nr_twi_devices;
+		
+		ADXL345 * accelADXL;
+		LIS302DL * accelLIS;
+		TMP102 * temp102;
+		BMP085 * bmp085;
 #endif
 
 #if MINIBEE_ENABLE_SHT == 1
