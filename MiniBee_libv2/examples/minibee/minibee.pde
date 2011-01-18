@@ -5,10 +5,10 @@
 MiniBeeV2 Bee = MiniBeeV2();
 
 void setup() {
-  // board revision A - 8MHz clock
-//   Bee.begin(19200);
+  // board revision A - 8MHz clock --- maybe can now also be faster??
+//    Bee.begin(19200);
  // board revision B and up - 12 MHz clock (or higher)
-  Bee.begin(57600);
+   Bee.begin(115200);
 }
 
 void loop() {

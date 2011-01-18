@@ -81,7 +81,7 @@ class MiniBee {
 		
 // 		void ParseCustom( char * msg ){ Serial.println( msg ); };
 		
-		void begin(int); //init function
+		void begin(long); //init function
 		void doLoopStep(void); // loop function
 		
 		void setRemoteConfig( bool onoff );
@@ -98,7 +98,7 @@ class MiniBee {
 
 		void readXBeeSerial(void);
 		
-		void openSerial(int);
+		void openSerial(long);
 		void configXBee();
 
 		void setID( uint8_t id );

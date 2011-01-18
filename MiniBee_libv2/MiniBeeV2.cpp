@@ -86,7 +86,7 @@ MiniBeeV2::MiniBeeV2() {
 
 // MiniBee Bee = MiniBee();
 
-void MiniBeeV2::openSerial(int baud_rate) {
+void MiniBeeV2::openSerial(long baud_rate) {
 	Serial.begin(baud_rate);  
 }
 
@@ -107,16 +107,17 @@ int MiniBeeV2::dataSize(){
     return datasize;
 }
 
-void MiniBeeV2::begin(int baud_rate) {
-	openSerial(baud_rate);
-	delay(200);
+void MiniBeeV2::begin(long baud_rate) {
 
 	configXBee();
-	delay(500);
+	delay(1000);
+
+	openSerial(baud_rate);
+// 	delay(200);
 
 	readXBeeSerial();
 	// allow some delay before sending data
-	delay(500);
+// 	delay(500);
 
 	sendSerialNumber();
 

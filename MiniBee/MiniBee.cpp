@@ -75,7 +75,7 @@ MiniBee::MiniBee() {
 
 // MiniBee Bee = MiniBee();
 
-void MiniBee::openSerial(int baud_rate) {
+void MiniBee::openSerial(long baud_rate) {
 	Serial.begin(baud_rate);  
 }
 
@@ -96,18 +96,24 @@ int MiniBee::dataSize(){
     return datasize;
 }
 
-void MiniBee::begin(int baud_rate) {
-	openSerial(baud_rate);
-	delay(200);
-
+void MiniBee::begin(long baud_rate) {
 	configXBee();
-	delay(500);
+	delay(1000);
 
-	readXBeeSerial();
+	openSerial(baud_rate);
+// 	delay(500);
+
+	send( N_INFO, "set baudrate", 13 );
+
+	delay( 1000 );
+
+ 	readXBeeSerial();
 	// allow some delay before sending data
-	delay(500);
+// 	delay(500);
 
-	sendSerialNumber();
+	send( N_INFO, "read serial", 12 );
+
+ 	sendSerialNumber();
 
 	status = WAITFORHOST;
 }
@@ -489,8 +495,9 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 			}
 			break;
 		case S_CONFIG:
+// 		  send( N_INFO, msg, size  );
 	    if ( remoteConfig ){
-			// check if right config_id:
+		// check if right config_id:
 		if ( checkConfMsg( msg[0] ) ){
 		    if ( msg[1] == config_id ){
 			writeConfig( msg, size );
@@ -721,6 +728,7 @@ void MiniBee::readConfigMsg(char *msg, uint8_t size){
 void MiniBee::readConfig(void) {
 	config = (char*)malloc(sizeof(char) * CONFIG_BYTES);
 	for(i = 0;i < CONFIG_BYTES;i++) config[i] = eeprom_read_byte((uint8_t *) i);
+// 	send( N_INFO, config, CONFIG_BYTES );
 	parseConfig();
 	free(config);
 }
@@ -745,7 +753,10 @@ void MiniBee::parseConfig(void){
 	config_id = config[0];
 	msgInterval = config[1]*256 + config[2];
 	samplesPerMsg = config[3];
-	for(i = 0;i < (PIN_CONFIG_BYTES-4);i++){
+	
+// 	send( N_INFO, config, CONFIG_BYTES );
+	
+	for(i = 0;i < PIN_CONFIG_BYTES;i++){
 	    pin = i + PINOFFSET;
 	//    pin = pin_ids[i];
 	    if ( isValidPin( pin ) ){
@@ -812,6 +823,7 @@ void MiniBee::parseConfig(void){
 			case TWIData:
 // 			    datasize += 6; // datasize will be determined in twi setup
 			case TWIClock:
+// 			  	send( N_INFO, "setting twi", 12 );
 			    twiOn = true;
 			    hasInput = true;
 			    break;
@@ -838,8 +850,11 @@ void MiniBee::parseConfig(void){
 	    }
 	}
 #if MINIBEE_ENABLE_TWI == 1
+// 	send( N_INFO, "checking twi", 13 );
 	if ( twiOn ){
+// 	  send( N_INFO, "twi on", 7 );
 	  nr_twi_devices = config[PIN_CONFIG_BYTES+4];
+// 	  send( N_INFO, (char*) &nr_twi_devices, 1 );
 	  twi_devices = (uint8_t*)malloc(sizeof(uint8_t) * nr_twi_devices);
 	  for(i = 0;i < nr_twi_devices; i++ ){
 	    twi_devices[i] = config[PIN_CONFIG_BYTES+5+i];
@@ -858,6 +873,7 @@ void MiniBee::parseConfig(void){
 		break;
 	    }
 	  }
+// 	  send( N_INFO, (char*) twi_devices, nr_twi_devices );
 	}
 #endif
 	

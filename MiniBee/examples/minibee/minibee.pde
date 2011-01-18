@@ -10,7 +10,7 @@
 MiniBee Bee = MiniBee();
 
 void setup() {
-  Bee.begin(57600);
+  Bee.begin(115200);
 }
 
 void loop() {
