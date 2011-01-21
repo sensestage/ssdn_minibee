@@ -16,23 +16,37 @@
 #include "TMP102.h"
 #include <Wire.h>
 
-int TMP102::readTemp(){  
-  Wire.beginTransmission(TMP102_addres1);  // select temperature register
-  Wire.send(TMP102_REG);		   // (if only temperature is needed this can
-  Wire.endTransmission();	     // be done once in setup() )
 
-  Wire.requestFrom(TMP102_addres1, 2);     // request temperature
-  byte byte1 = Wire.receive();
-  byte byte2 = Wire.receive();    
+TMP102::TMP102(){ 
+init();
+}
+
+void TMP102::init(){
+  currentTemp = 0;
+}
+  
+void TMP102::setup(){
+   Wire.beginTransmission(TMP102_addres1);  // select temperature register
+   Wire.send(TMP102_REG);		   // (if only temperature is needed this can
+   Wire.endTransmission();	     // be done once in setup() ) 
+}
+
+byte TMP102::readTemp(){  
+
+//   int val = -1;
+  
+  byte res = Wire.requestFrom(TMP102_addres1, 2);     // request temperature
+  if (res == 2) {
+    byte msb = Wire.receive();
+    byte lsb = Wire.receive();    
 
 //  CALCULATING TEMPERATURES
-  int tempint = byte1 << 8;	   // shift first byte to high byte in an int
-  tempint = tempint | byte2;	  // or the second byte into the int
-  tempint = tempint >> 4;	     // right shift the int 4 bits per chip doc
-//   float tempflt = float( tempint ) * .0625; // calculate actual temperature per chip doc
-    
-//    return val*0.0625;
-   return tempint;
+
+    currentTemp = ((msb) << 4);   /* MSB */
+    currentTemp |= (lsb >> 4);    /* LSB */
+  }
+  //    return val*0.0625;
+  return res;
 }
 
 int TMP102::readLow(){  

@@ -103,7 +103,7 @@ void MiniBee::begin(long baud_rate) {
 	openSerial(baud_rate);
 // 	delay(500);
 
-	send( N_INFO, "set baudrate", 13 );
+// 	send( N_INFO, "set baudrate", 13 );
 
 	delay( 1000 );
 
@@ -111,7 +111,7 @@ void MiniBee::begin(long baud_rate) {
 	// allow some delay before sending data
 // 	delay(500);
 
-	send( N_INFO, "read serial", 12 );
+// 	send( N_INFO, "read serial", 12 );
 
  	sendSerialNumber();
 
@@ -495,7 +495,8 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 			}
 			break;
 		case S_CONFIG:
-// 		  send( N_INFO, msg, size  );
+// 		  send( N_INFO, (char*) size, 1 );
+ 		  send( N_INFO, msg, size  );
 	    if ( remoteConfig ){
 		// check if right config_id:
 		if ( checkConfMsg( msg[0] ) ){
@@ -611,13 +612,21 @@ void MiniBee::setOutput(){
 	} 
 }
 
-void MiniBee::dataFromInt( int output, int offset ){
+void MiniBee::dataFromInt( unsigned int output, int offset ){
     data[offset]   = byte(output/256);
     data[offset+1] = byte(output%256);
 }
 
+void MiniBee::dataFromLong24( unsigned long output, int offset ){
+    output = output % 16777216; // 24 bits
+    data[offset]   = byte( output / 65536 );
+    output = output % 65536; // 16 bits
+    data[offset+1] = byte(output / 256);
+    data[offset+2] = byte(output % 256);
+}
+
 uint8_t MiniBee::readSensors( uint8_t db ){
-    int value;
+    unsigned int value;
     // read analog sensors
     for ( i = 0; i < 8; i++ ){
 	if ( analog_in[i] ){
@@ -653,10 +662,10 @@ uint8_t MiniBee::readSensors( uint8_t db ){
     // read SHT sensor
     if ( shtOn ){
 	measureSHT( SHT_T_CMD );
-	dataFromInt( valSHT, db );
+	dataFromInt( (unsigned int) valSHT, db );
 	db += 2;
 	measureSHT( SHT_H_CMD );
-	dataFromInt( valSHT, db );
+	dataFromInt( (unsigned int) valSHT, db );
 	db += 2;      
     }
 #endif
@@ -709,6 +718,7 @@ void MiniBee::writeConfig(char *msg, uint8_t size) {
 	    eeprom_write_byte((uint8_t *) i, msg[i+1]);
 	    //write byte to memory
 	}
+// 	send( N_INFO, msg, size );
 }
 
 void MiniBee::readConfigMsg(char *msg, uint8_t size){
@@ -754,7 +764,7 @@ void MiniBee::parseConfig(void){
 	msgInterval = config[1]*256 + config[2];
 	samplesPerMsg = config[3];
 	
-// 	send( N_INFO, config, CONFIG_BYTES );
+	send( N_INFO, config, CONFIG_BYTES );
 	
 	for(i = 0;i < PIN_CONFIG_BYTES;i++){
 	    pin = i + PINOFFSET;
@@ -850,11 +860,11 @@ void MiniBee::parseConfig(void){
 	    }
 	}
 #if MINIBEE_ENABLE_TWI == 1
-// 	send( N_INFO, "checking twi", 13 );
+	send( N_INFO, "checking twi", 13 );
 	if ( twiOn ){
-// 	  send( N_INFO, "twi on", 7 );
+ 	  send( N_INFO, "twi on", 7 );
 	  nr_twi_devices = config[PIN_CONFIG_BYTES+4];
-// 	  send( N_INFO, (char*) &nr_twi_devices, 1 );
+ 	  send( N_INFO, (char*) &nr_twi_devices, 1 );
 	  twi_devices = (uint8_t*)malloc(sizeof(uint8_t) * nr_twi_devices);
 	  for(i = 0;i < nr_twi_devices; i++ ){
 	    twi_devices[i] = config[PIN_CONFIG_BYTES+5+i];
@@ -866,14 +876,15 @@ void MiniBee::parseConfig(void){
 		datasize += 6;
 		break;
 	      case TWI_BMP085:
-		datasize += 4;
+		datasize += 8; // 2 byte int, 3 byte long, 3 byte long
 		break;
 	      case TWI_TMP102:
 		datasize += 2;
 		break;
 	    }
 	  }
-// 	  send( N_INFO, (char*) twi_devices, nr_twi_devices );
+	  send( N_INFO, (char*) twi_devices, nr_twi_devices );
+	  send( N_INFO, (char*) &datasize, 1 );
 	}
 #endif
 	
@@ -889,6 +900,7 @@ void MiniBee::parseConfig(void){
 #if MINIBEE_ENABLE_TWI == 1
 	if ( twiOn ){
 	    Wire.begin();
+	    delay( 200 );
 // 	    setupAccelleroTWI();
 	    setupTWIdevices();
 	}
@@ -939,6 +951,8 @@ void MiniBee::setupTWIdevices(void){
 	  switch( twi_devices[i] ){
 	      case TWI_ADXL345:
 		accelADXL = (ADXL345*) malloc( sizeof( ADXL345 ) );
+		accelADXL->init();
+// 		accelADXL = (ADXL345*) new ADXL345();
 		accelADXL->powerOn();
 		accelADXL->setJustifyBit( false );
 		accelADXL->setFullResBit( true );
@@ -946,10 +960,13 @@ void MiniBee::setupTWIdevices(void){
 		break;
 	      case TWI_LIS302DL:
 		accelLIS = (LIS302DL*) malloc( sizeof( LIS302DL ) );
+// 		accelLIS = new LIS302DL();
 		accelLIS->setup();
 		break;
 	      case TWI_BMP085:
 		bmp085 = (BMP085*) malloc( sizeof( BMP085 ) );
+// 		bmp085 = new BMP085();
+		bmp085->initialisation();
 		bmp085->init();
 		//bmp085.init(MODE_STANDARD, 1018.50, false);  //  false = using hpa units
                   // this initialization is useful for normalizing pressure to specific datum.
@@ -959,7 +976,9 @@ void MiniBee::setupTWIdevices(void){
                   // pressure will be calculated based on TruePressure and known altitude.
 		break;
 	      case TWI_TMP102:
-		temp102 = (TMP102*) malloc( sizeof( TMP102 ) );
+ 		temp102 = (TMP102*) malloc( sizeof( TMP102 ) );
+// 		temp102 = new TMP102();
+		temp102->init();
 		// no setup needed
 		break;
 	    }
@@ -971,7 +990,8 @@ int MiniBee::readTWIdevices( int dboff ){
 	
 	int accx, accy, accz;
 	unsigned int accx2, accy2, accz2;
-	float bmp;
+	float bmpT, bmpA, bmpP;
+	unsigned long bmpConv;
 
 	for(i = 0;i < nr_twi_devices; i++ ){
 	  switch( twi_devices[i] ){
@@ -980,37 +1000,45 @@ int MiniBee::readTWIdevices( int dboff ){
 		accx2 = (unsigned int) (accx + 4096); // from twos complement signed int to unsigned int
 		accy2 = (unsigned int) (accy + 4096); // from twos complement signed int to unsigned int
 		accz2 = (unsigned int) (accz + 4096); // from twos complement signed int to unsigned int
-		dataFromInt( accx2, dboff );
-		dataFromInt( accy2, dboff+2 );
-		dataFromInt( accz2, dboff+4 );
-		dboff += 6;
+		dataFromInt( accx2, dboff + dbplus );
+		dataFromInt( accy2, dboff + dbplus + 2 );
+		dataFromInt( accz2, dboff + dbplus + 4 );
+// 		dboff += 6;
 		dbplus =+ 6;
 		break;
 	      case TWI_LIS302DL:
 		accelLIS->read( &accx, &accy, &accz );
-		dataFromInt( accx, dboff );
-		dataFromInt( accy, dboff+2 );
-		dataFromInt( accz, dboff+4 );
+		accx2 = (unsigned int) (accx + 2048); // from twos complement signed int to unsigned int
+		accy2 = (unsigned int) (accy + 2048); // from twos complement signed int to unsigned int
+		accz2 = (unsigned int) (accz + 2048); // from twos complement signed int to unsigned int
+		dataFromInt( accx, dboff + dbplus );
+		dataFromInt( accy, dboff + dbplus + 2 );
+		dataFromInt( accz, dboff + dbplus + 4 );
 		dbplus += 6;
-		dboff += 6;
+// 		dboff += 6;
 		break;
 	      case TWI_BMP085:
-		bmp085->getTemperature( &bmp );
-		accx = (int) (bmp * 10 + 2730); // temperature in Kelvin
-		bmp085->getPressure( &bmp );
-		accy = (int) (bmp * 10); // pressure in hpascal * 10
-		bmp085->getAltitude( &bmp );
-		accz = (int) (bmp * 100 ); // altitude in centimeters
-		dataFromInt( accx, dboff );
-		dataFromInt( accy, dboff+2 );
-		dataFromInt( accz, dboff+4 );
-		dbplus += 6;
-		dboff += 6;
+		bmp085->getTemperature( &bmpT );
+		accx2 = (unsigned int) ( (bmpT + 273 ) * 100 ); // temperature in centi - Kelvin
+		dataFromInt( accx2, dboff + dbplus );
+		dbplus += 2;
+
+		bmp085->getPressure( &bmpP );
+		bmpConv = (unsigned long) ( bmpP * 100 ); // pressure in hpascal * 100
+		dataFromLong24( bmpConv, dboff + dbplus );
+		dbplus += 3;
+
+		bmp085->getAltitude( &bmpA );
+		bmpConv = (unsigned long) ( (bmpA + 100 ) * 100 ); // altitude in centimeters
+		dataFromLong24( bmpConv, dboff + dbplus );
+		dbplus += 3;
 		break;
 	      case TWI_TMP102:
-		accx = temp102->readTemp();
-		dataFromInt( accx, dboff );
-		dboff += 2;
+		temp102->readTemp();
+		accx2 = (unsigned int) ( temp102->currentTemp + 2048 );
+		dataFromInt( accx2, dboff + dbplus );
+		dbplus += 2;
+// 		dboff += 2;
 		break;
 	    }
 	}

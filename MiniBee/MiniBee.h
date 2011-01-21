@@ -186,9 +186,9 @@ class MiniBee {
 
 	private:
 		#define PIN_CONFIG_BYTES 19 // 23 for base config. 4 for other stuff, so 19 for the pins
-		#define CONFIG_BYTES 32 // 23 for pin configs. then some for twi configuration (which is variable!)
+		#define CONFIG_BYTES 64 // 23 for pin configs. then some for twi configuration (which is variable!)
 		
-		#define MAX_MESSAGE_SIZE 26
+		#define MAX_MESSAGE_SIZE 64
 		#define XBEE_SLEEP_PIN 2
 		#define AT_OK 167
 		#define AT_ERROR 407
@@ -277,7 +277,8 @@ class MiniBee {
 		void readConfigMsg(char *, uint8_t); // assign config from msg
 
 	// collecting sensor data:
-		void dataFromInt( int output, int offset );
+		void dataFromInt( unsigned int output, int offset );
+		void dataFromLong24( unsigned long output, int offset );
 		char *data;
 		int datacount;
 		int datasize;

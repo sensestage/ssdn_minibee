@@ -81,7 +81,8 @@
 class BMP085 {
 public:	
 	BMP085();
-	
+
+	void initialisation();
 	// BMP initialization
 	void init();    		            // sets current elevation above ground level to 0 meters
 	void init(byte _BMPMode, float _initVal, bool _meters);		// sets a reference datum
@@ -110,8 +111,8 @@ public:
 	void calcTruePressure(long *_TruePressure);	// calc Pressure in Pa 
 		
 	// dummy stuff
-//	void dumpRegisters();				// debug only
-//	void dumpCalData();				// debug only
+	void dumpRegisters();				// debug only
+	void dumpCalData();				// debug only
 
 private:
 	int ac1,ac2,ac3,b1,b2,mb,mc,md;			// cal data	
@@ -132,6 +133,6 @@ private:
 	void readmem(byte _addr, int _nbytes, byte __buff[]);
 };
 /* dummy stuff */
-//void print_bits(byte val);
+void print_bits(byte val);
 //void print_unit16(uint16_t val);
 #endif

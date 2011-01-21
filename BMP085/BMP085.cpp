@@ -32,6 +32,10 @@
 #include <Wire.h>
 
 BMP085::BMP085() {
+  initialisation();
+}
+
+void BMP085::initialisation(){  
 	_dev_address = BMP085_DEFAULT_ADDR;
 	_pressure_waittime[0] = 4500; // These are maximum convertion times.
 	_pressure_waittime[1] = 7500; // It is possible to use pin EOC (End Of Conversion)
@@ -161,57 +165,57 @@ void BMP085::calcTruePressure(long *_TruePressure) {
 	*_TruePressure = p + ((x1 + x2 + 3791) >> 4);
 }
 
-// void BMP085::dumpRegisters() {
-// 	int ValidRegisterAddr[]={0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF,0xF6,0xF7,0xF8,0xF9};	
-// 	byte _b, i, totregisters = sizeof(ValidRegisterAddr)/sizeof(int *);
-// 	Serial.println("---dump start---");
-// 	Serial.println("Register address|Resgister data");
-// 	Serial.println("hex	dec	| 76543210	dec	hex");
-// 	for (i=0;i<totregisters;i++){    
-// 		Serial.print("0x");
-// 		Serial.print(ValidRegisterAddr[i], HEX);
-// 		Serial.print("	");
-// 		Serial.print(ValidRegisterAddr[i], DEC);
-// 		Serial.print("	|");
-// 		readmem(ValidRegisterAddr[i], 1, &_b);
-// 		Serial.print("b");
-// 		print_bits(_b);
-// 		Serial.print("	");
-// 		Serial.print(_b,DEC);
-// 		Serial.print("	0x");
-// 		Serial.print(_b,HEX);
-// 		Serial.println("");    
-// 	}
-// 	Serial.println("---dump end---");
-// }
-// 
-// 
-// void BMP085::dumpCalData() {
-// 	Serial.println("---cal data start---");
-// 	Serial.print("ac1:");
-// 	Serial.println(ac1,DEC);
-// 	Serial.print("ac2:");
-// 	Serial.println(ac2,DEC);
-// 	Serial.print("ac3:");
-// 	Serial.println(ac3,DEC);
-// 	Serial.print("ac4:");
-// 	Serial.println(ac4,DEC);
-// 	Serial.print("ac5:");
-// 	Serial.println(ac5,DEC);
-// 	Serial.print("ac6:");
-// 	Serial.println(ac6,DEC);	
-// 	Serial.print("b1:");
-// 	Serial.println(b1,DEC);
-// 	Serial.print("b2:");
-// 	Serial.println(b2,DEC);	
-// 	Serial.print("mb:");
-// 	Serial.println(mb,DEC);
-// 	Serial.print("mc:");
-// 	Serial.println(mc,DEC);
-// 	Serial.print("md:");
-// 	Serial.println(md,DEC);
-// 	Serial.println("---cal data end---");
-// }
+void BMP085::dumpRegisters() {
+	int ValidRegisterAddr[]={0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF,0xF6,0xF7,0xF8,0xF9};	
+	byte _b, i, totregisters = sizeof(ValidRegisterAddr)/sizeof(int *);
+	Serial.println("---dump start---");
+	Serial.println("Register address|Resgister data");
+	Serial.println("hex	dec	| 76543210	dec	hex");
+	for (i=0;i<totregisters;i++){    
+		Serial.print("0x");
+		Serial.print(ValidRegisterAddr[i], HEX);
+		Serial.print("	");
+		Serial.print(ValidRegisterAddr[i], DEC);
+		Serial.print("	|");
+		readmem(ValidRegisterAddr[i], 1, &_b);
+		Serial.print("b");
+		print_bits(_b);
+		Serial.print("	");
+		Serial.print(_b,DEC);
+		Serial.print("	0x");
+		Serial.print(_b,HEX);
+		Serial.println("");    
+	}
+	Serial.println("---dump end---");
+}
+
+
+void BMP085::dumpCalData() {
+	Serial.println("---cal data start---");
+	Serial.print("ac1:");
+	Serial.println(ac1,DEC);
+	Serial.print("ac2:");
+	Serial.println(ac2,DEC);
+	Serial.print("ac3:");
+	Serial.println(ac3,DEC);
+	Serial.print("ac4:");
+	Serial.println(ac4,DEC);
+	Serial.print("ac5:");
+	Serial.println(ac5,DEC);
+	Serial.print("ac6:");
+	Serial.println(ac6,DEC);	
+	Serial.print("b1:");
+	Serial.println(b1,DEC);
+	Serial.print("b2:");
+	Serial.println(b2,DEC);	
+	Serial.print("mb:");
+	Serial.println(mb,DEC);
+	Serial.print("mc:");
+	Serial.println(mc,DEC);
+	Serial.print("md:");
+	Serial.println(md,DEC);
+	Serial.println("---cal data end---");
+}
 
 //PRIVATE methods
 
@@ -263,11 +267,11 @@ void BMP085::readmem(byte _addr, int _nbytes, byte __buff[]) {
 }
 
 
-// void print_bits(byte val){
-//   int i;
-//   for(i=7; i>=0; i--) 
-//     Serial.print(val >> i & 1, BIN);
-// }
+void print_bits(byte val){
+  int i;
+  for(i=7; i>=0; i--) 
+    Serial.print(val >> i & 1, BIN);
+}
 /* void print_unit16(uint16_t val){
   int i;
   for(i=15; i>=0; i--) 

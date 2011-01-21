@@ -20,12 +20,16 @@
 #define TO_READ (6)      // num of bytes we are going to read each time (two bytes for each axis)
 
 ADXL345::ADXL345() {
+  init();
+}
+
+void ADXL345::init(){
   status = ADXL345_OK;
   error_code = ADXL345_NO_ERROR;
 
   gains[0] = 0.00376390;
   gains[1] = 0.00376009;
-  gains[2] = 0.00349265;
+  gains[2] = 0.00349265;  
 }
 
 void ADXL345::powerOn() {
