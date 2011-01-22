@@ -496,7 +496,7 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 			break;
 		case S_CONFIG:
 // 		  send( N_INFO, (char*) size, 1 );
- 		  send( N_INFO, msg, size  );
+//  		  send( N_INFO, msg, size  );
 	    if ( remoteConfig ){
 		// check if right config_id:
 		if ( checkConfMsg( msg[0] ) ){
@@ -764,7 +764,7 @@ void MiniBee::parseConfig(void){
 	msgInterval = config[1]*256 + config[2];
 	samplesPerMsg = config[3];
 	
-	send( N_INFO, config, CONFIG_BYTES );
+// 	send( N_INFO, config, CONFIG_BYTES );
 	
 	for(i = 0;i < PIN_CONFIG_BYTES;i++){
 	    pin = i + PINOFFSET;
@@ -860,11 +860,11 @@ void MiniBee::parseConfig(void){
 	    }
 	}
 #if MINIBEE_ENABLE_TWI == 1
-	send( N_INFO, "checking twi", 13 );
+// 	send( N_INFO, "checking twi", 13 );
 	if ( twiOn ){
- 	  send( N_INFO, "twi on", 7 );
+//  	  send( N_INFO, "twi on", 7 );
 	  nr_twi_devices = config[PIN_CONFIG_BYTES+4];
- 	  send( N_INFO, (char*) &nr_twi_devices, 1 );
+//  	  send( N_INFO, (char*) &nr_twi_devices, 1 );
 	  twi_devices = (uint8_t*)malloc(sizeof(uint8_t) * nr_twi_devices);
 	  for(i = 0;i < nr_twi_devices; i++ ){
 	    twi_devices[i] = config[PIN_CONFIG_BYTES+5+i];
@@ -883,8 +883,8 @@ void MiniBee::parseConfig(void){
 		break;
 	    }
 	  }
-	  send( N_INFO, (char*) twi_devices, nr_twi_devices );
-	  send( N_INFO, (char*) &datasize, 1 );
+// 	  send( N_INFO, (char*) twi_devices, nr_twi_devices );
+// 	  send( N_INFO, (char*) &datasize, 1 );
 	}
 #endif
 	
