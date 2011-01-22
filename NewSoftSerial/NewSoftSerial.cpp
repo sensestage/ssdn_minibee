@@ -376,6 +376,20 @@ NewSoftSerial::NewSoftSerial(uint8_t receivePin, uint8_t transmitPin, bool inver
   setRX(receivePin);
 }
 
+NewSoftSerial::NewSoftSerial(){}
+
+void NewSoftSerial::initPort(uint8_t receivePin, uint8_t transmitPin, bool inverse_logic /* = false */)
+{
+  _rx_delay_centering = 0;
+  _rx_delay_intrabit = 0;
+  _rx_delay_stopbit = 0;
+  _tx_delay = 0;
+  _buffer_overflow = false;
+  _inverse_logic = inverse_logic;
+  setTX(transmitPin);
+  setRX(receivePin);
+}
+
 //
 // Destructor
 //

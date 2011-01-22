@@ -22,6 +22,13 @@
 
 /*
  * * * * * * * * * * * * * * * * * * * *
+ * *  Adaptations for use with NewSoftSerial by Marije Baalman  * *
+ * *  January, 2011              * *
+ * * * * * * * * * * * * * * * * * * * *
+*/
+
+/*
+ * * * * * * * * * * * * * * * * * * * *
  * *  Code written by Corey Johnson  * *
  * *  September 1, 2010              * *
  * * * * * * * * * * * * * * * * * * * *
@@ -48,42 +55,32 @@ const char NACK = char(21); // ... "Non-Acknowledge"
 ///////////////////////// * Global variables * ////////////////////////
 static byte MDR_Pin; // ....... Motion Detect/Reset. (Arduino pin) 
 static byte SLP_Pin; // ....... Sleep. (Arduino pin)
-static byte Serial_Port; // ... Serial Port used to communicate with ePIR. (Serial1(default), Serial2, Serial3)
+// static byte Serial_Port; // ... Serial Port used to communicate with ePIR. (Serial1(default), Serial2, Serial3)
 
 SoftePIR::SoftePIR(){/* nothing to construct */}
+SoftePIR::SoftePIR( uint8_t rxpin, uint8_t txpin ){
+   initSerial( rxpin, txpin );  
+//   NewSoftSerial serial( rxpin, txpin );
+}
+
 SoftePIR::~SoftePIR(){/* nothing to destruct */}
+
+void SoftePIR::initSerial(uint8_t rxpin, uint8_t txpin ){
+//   NewSoftSerial serial( rxpin, txpin );
+  serial = (NewSoftSerial*) malloc( sizeof( NewSoftSerial ) );
+  serial->initPort( rxpin, txpin );
+}
 
 /* *********************** PRIVATE FUNCTIONS *********************** */
 ////////////////////////// * Read Function * //////////////////////////
 char SoftePIR::readChar(char command){ // ......... Returns value selected by command sent to ePIR.
 	char outChar = '\0'; // ..................... Assign NULL to output variable.
-	switch(Serial_Port){ // ..................... Use correct serial port assigned by .Init function.
-		case 2: // ................................ Use Serial port 2.
-			do { // ................................. Start of do-loop.
-				Serial2.print(command); // ............ Sends command to ePIR.
-				while(Serial2.available() == 0); // ... Waits for reply from ePIR.
-				outChar = Serial2.read(); // .......... Copy reply to output variable.
-			} // .................................... End of do-loop.
-			while (outChar == NACK); // ............. Repeat do-loop if NACK is received from ePIR.
-		break; // ................................. End of case 2.
-		case 3: // ................................ Same as case 2 but uses Serial port 3.
-			do {
-				Serial3.print(command);
-				while(Serial3.available() == 0);
-				outChar = Serial3.read();
-			}
-			while (outChar == NACK);
-		break; // ................................. End of case 3.
-//// If any valid value(byte) other than 2 or 3 is used, the default case will run (You should use 1 for value). ////
-		default: // ............................... Same as case 2 but uses Serial port 1.
-			do {
-				Serial1.print(command);
-				while(Serial1.available() == 0);
-				outChar = Serial1.read();
-			}
-			while (outChar == NACK);
-		break; // ................................. End of default case.
-	} // ........................................ End of switch-case.
+	do {
+		serial->print(command);
+		while(serial->available() == 0);
+		outChar = serial->read();
+	}
+	while (outChar == NACK);
 	return outChar; // .......................... Return from function with value from ePIR.
 } // .......................................... End of read function.
 
@@ -91,39 +88,14 @@ char SoftePIR::readChar(char command){ // ......... Returns value selected by co
 char SoftePIR::writeChar(char command, char inChar){ // ... Changes value of ePIR selected by command to value of inChar and returns with ACK. 
 	char outChar = '\0'; // ............................. Assign NULL to output variable.
 	do { // ............................................. Start of do-loop 'A'.
-		switch(Serial_Port){ // ........................... Use correct serial port assigned by .Init function.
-			case 2: // ...................................... Use Serial port 2.
-				do { // ....................................... Start of do-loop 'B'.
-					Serial2.print(command); // .................. Sends command to ePIR.
-					while(Serial2.available() == 0); // ......... Waits for reply from ePIR.
-				} // .......................................... End of do-loop 'B'.
-				while (Serial2.read() == NACK); // ............ Repeat do-loop if NACK is received from ePIR.
-				Serial2.print(inChar); // ..................... Send value 'inChar' to ePIR.
-				while(Serial2.available() == 0); // ........... Wait for reply from ePIR.
-				outChar = Serial2.read(); // .................. Assign received value from ePIR to 'outChar'.
-			break; // ....................................... End of case 2.
-			case 3: // ...................................... Same as case 2 but uses Serial port 3.
-				do {
-					Serial3.print(command);
-					while(Serial3.available() == 0);
-				}
-				while (Serial3.read() == NACK);
-				Serial3.print(inChar);
-				while(Serial3.available() == 0);
-				outChar = Serial3.read();
-			break; // ....................................... End of case 3.
-//// If any valid value(byte) other than 2 or 3 is used, the default case will run (You should use 1 for value). ////
-			default: // ..................................... Same as case 2 but uses Serial port 1.
-				do {
-					Serial1.print(command);
-					while(Serial1.available() == 0);
-				}
-				while (Serial1.read() == NACK);
-				Serial1.print(inChar);
-				while(Serial1.available() == 0);
-				outChar = Serial1.read();
-			break; // ....................................... End of default case.
-		} // .............................................. End of switch-case.
+		do {
+			serial->print(command);
+			while(serial->available() == 0);
+		}
+		while (serial->read() == NACK);
+		serial->print(inChar);
+		while(serial->available() == 0);
+		outChar = serial->read();
 	} // ................................................ End of do-loop 'A'.
 	while (outChar != ACK); // .......................... Repeats if reply from ePIR is not ACK.
 	return outChar; // .................................. Return from function with value 'ACK'.
@@ -132,57 +104,25 @@ char SoftePIR::writeChar(char command, char inChar){ // ... Changes value of ePI
 ///////////////////// /* Confirmation Function */ /////////////////////
 char SoftePIR::confirm(void){ // ................ Sends confirmation sequence '1234' to ePIR (Needed for .Sleep and .Reset functions).
 	char outChar = '\0'; // ................... Assign NULL to output variable.
-	switch(Serial_Port){ // ................... Use correct serial port assigned by .Init function.
-		case 2: // .............................. Use Serial port 2.
-			Serial2.print('1'); // ................ Send char '1' to ePIR.
-			Serial2.print('2'); // ................ Send char '2' to ePIR.
-			Serial2.print('3'); // ................ Send char '3' to ePIR.
-			Serial2.print('4'); // ................ Send char '4' to ePIR.
-			while(Serial2.available() == 0); // ... Waits for reply from EPIR.
-			outChar = Serial2.read(); // .......... Assign received value from ePIR to 'outChar'.
-		break; // ............................... End of case 2.
-		case 3: // .............................. Same as case 2 but uses Serial port 3.
-			Serial3.print('1');
-			Serial3.print('2');
-			Serial3.print('3');
-			Serial3.print('4');
-			while(Serial3.available() == 0);
-			outChar = Serial3.read();
-		break; // ............................... End of case 3.
-//// If any valid value(byte) other than 2 or 3 is used, the default case will run (You should use 1 for value). ////
-		default: // ............................. Same as case 2 but uses Serial port 1.
-			Serial1.print('1');
-			Serial1.print('2');
-			Serial1.print('3');
-			Serial1.print('4');
-			while(Serial1.available() == 0);
-			outChar = Serial1.read();
-		break; // ............................... End of case 3.
-	} // ...................................... End of switch-case.
+	serial->print('1');
+	serial->print('2');
+	serial->print('3');
+	serial->print('4');
+	while(serial->available() == 0);
+	outChar = serial->read();
 	return outChar; // ........................ Return from function with value 'ACK'.
 }
 
 /* *********************** PUBLIC  FUNCTIONS *********************** */
 /////////////////////////// Initialize ePIR ///////////////////////////
-void SoftePIR::Init(byte serialPort, byte MDRpin, byte SLPpin){
+void SoftePIR::Init(byte MDRpin, byte SLPpin){
 	MDR_Pin = MDRpin;
 	SLP_Pin = SLPpin;
-	Serial_Port = serialPort;
 	digitalWrite(MDR_Pin, HIGH);
 	pinMode(MDR_Pin, OUTPUT);
 	digitalWrite(SLP_Pin, HIGH);
 	pinMode(SLP_Pin, OUTPUT);
-	switch(Serial_Port){
-		case 2:
-			Serial2.begin(9600);
-		break;
-		case 3:
-			Serial3.begin(9600);
-		break;
-		default:
-			Serial1.begin(9600);
-		break;
-	}
+	serial->begin(9600);
 	return;
 }
 
@@ -382,51 +322,19 @@ char SoftePIR::Direction(char direction){
 
 ///////////////////////////// Reset ePIR //////////////////////////////
 void SoftePIR::Reset(void){
-	switch(Serial_Port){
-		case 2:
-			Serial2.print('X');
-			while(Serial2.available() == 0);
-			Serial2.read();
-			confirm();
-		break;
-		case 3:
-			Serial3.print('X');
-			while(Serial3.available() == 0);
-			Serial3.read();
-			confirm();
-		break;
-		default:
-			Serial1.print('X');
-			while(Serial1.available() == 0);
-			Serial1.read();
-			confirm();
-		break;
-	}
+	serial->print('X');
+	while(serial->available() == 0);
+	serial->read();
+	confirm();
 	return;
 }
 
 /////////////////////////// ePIR Sleep Mode ///////////////////////////
 void SoftePIR::Sleep(void){
-	switch(Serial_Port){
-		case 2:
-			Serial2.print('Z');
-			while(Serial2.available() == 0);
-			Serial2.read();
-			confirm();
-		break;
-		case 3:
-			Serial3.print('Z');
-			while(Serial3.available() == 0);
-			Serial3.read();
-			confirm();
-		break;
-		default:
-			Serial1.print('Z');
-			while(Serial1.available() == 0);
-			Serial1.read();
-			confirm();
-		break;
-	}
+	serial->print('Z');
+	while(serial->available() == 0);
+	serial->read();
+	confirm();
 	return;
 }
 
@@ -435,26 +343,10 @@ word SoftePIR::Version(void){
 	byte appVer;
 	byte engVer;
 	word version;
-	switch(Serial_Port){
-		case 2:
-			Serial2.print('i');
-			while(Serial2.available() == 0);
-			appVer = Serial2.read();
-			engVer = Serial2.read();
-		break;
-		case 3:
-			Serial3.print('i');
-			while(Serial3.available() == 0);
-			appVer = Serial3.read();
-			engVer = Serial3.read();
-		break;
-		default:
-			Serial1.print('i');
-			while(Serial1.available() == 0);
-			appVer = Serial1.read();
-			engVer = Serial1.read();
-		break;
-	}
+	serial->print('i');
+	while(serial->available() == 0);
+	appVer = serial->read();
+	engVer = serial->read();
 	version = word(appVer, engVer);
 	return version;
 }

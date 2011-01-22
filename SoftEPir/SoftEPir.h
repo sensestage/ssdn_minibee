@@ -41,6 +41,8 @@
 
 #include <WProgram.h>
 
+#include <NewSoftSerial.h>
+
 #ifndef SOFTEPIR_H
 #define SOFTEPIR_H
 
@@ -54,8 +56,10 @@ class SoftePIR { //////////////////////////////////////// /* **** Class 'SoftePI
 	public: /////////////////////////////////////////// /* Public Functions */
 		SoftePIR();
 		~SoftePIR();
+		SoftePIR( uint8_t, uint8_t );
+		void initSerial( uint8_t, uint8_t );
 //////// Return type / Funtion name / Argument(s) ... Valid return/argument values. ////////
-		void Init(byte, byte, byte); // ................. <1,2,3> <Any unused Arduino pin> <Any unused Arduino pin>
+		void Init(byte, byte); // ................. <1,2,3> <Any unused Arduino pin> <Any unused Arduino pin>
 		char Status(void); // ........................... READ ONLY <Y,N,U>
 		byte LightLevel(void); // ....................... READ ONLY <0-255>
 		byte GateThresh(word threshold = 257); // ....... <0-255/256 sets default>
@@ -72,6 +76,8 @@ class SoftePIR { //////////////////////////////////////// /* **** Class 'SoftePI
 		void Reset(void); // ............................ Returns ACK if successful/NACK if not.
 		void Sleep(void); // ............................ Returns ACK if successful/NACK if not.
 		word Version(void); // .......................... READ ONLY val1(highByte)<0-255> / val2(lowByte)<0-255>
+		
+		NewSoftSerial * serial;
 };
 
 // extern SoftePIR EPIR; // Sets up an instance name of 'EPIR'.

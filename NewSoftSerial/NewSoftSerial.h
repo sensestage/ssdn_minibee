@@ -81,6 +81,9 @@ public:
   // public methods
   NewSoftSerial(uint8_t receivePin, uint8_t transmitPin, bool inverse_logic = false);
   ~NewSoftSerial();
+  NewSoftSerial();
+  void initPort(uint8_t receivePin, uint8_t transmitPin, bool inverse_logic = false);
+
   void begin(long speed);
   void end();
   int read();
