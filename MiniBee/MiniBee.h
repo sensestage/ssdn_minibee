@@ -134,6 +134,8 @@ class MiniBee {
 // 		void waitForConfig(void); // waits for the configuration message
 // 		void configure(void);	//configure from eeprom settings
 
+		void readConfigMsg(char *, uint8_t); // assign config from msg
+
 	//twi
 #if MINIBEE_ENABLE_TWI == 1
 		bool getFlagTWI();	//returns twi flag state
@@ -274,7 +276,6 @@ class MiniBee {
 		void writeConfig(char *, uint8_t); // eeprom write
 		void readConfig(void); // eeprom read
 		void parseConfig(void); // parse the config
-		void readConfigMsg(char *, uint8_t); // assign config from msg
 
 	// collecting sensor data:
 		void dataFromInt( unsigned int output, int offset );
