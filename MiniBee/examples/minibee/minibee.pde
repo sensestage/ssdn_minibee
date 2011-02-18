@@ -4,6 +4,7 @@
 #include <ADXL345.h>
 #include <TMP102.h>
 #include <BMP085.h>
+#include <HMC5843.h>
 
 #include <MiniBee.h>
 

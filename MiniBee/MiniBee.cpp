@@ -76,7 +76,8 @@ MiniBee::MiniBee() {
 // MiniBee Bee = MiniBee();
 
 void MiniBee::openSerial(long baud_rate) {
-	Serial.begin(baud_rate);  
+	Serial.begin(baud_rate);
+	readMePin();
 }
 
 void MiniBee::configXBee(){
@@ -494,6 +495,19 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 			    }
 			}
 			break;
+		case S_ME:
+			if ( checkIDMsg( msg[0] ) ){
+				len = strlen(serial);
+				ser = (char *)malloc(sizeof(char)* (len + 1 ) );
+				for(i = 0;i < len;i++)
+				    { ser[i] = msg[i+1]; }
+				ser[len] = '\0';
+				if(strcmp(ser, serial) == 0){
+				    setMeLed( msg[len+1] );
+				}
+				free(ser);
+			}
+			break;
 		case S_CONFIG:
 // 		  send( N_INFO, (char*) size, 1 );
 //  		  send( N_INFO, msg, size  );
@@ -562,6 +576,12 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 // 			break;
 		}
 }
+
+void MiniBee::setMeLed( uint8_t onoff ){
+    digitalWrite( me_pin, onoff );
+}
+
+
 
 void MiniBee::setRemoteConfig( bool onoff ){
     remoteConfig = onoff;
@@ -712,6 +732,26 @@ void MiniBee::sendSerialNumber(void){
 //	send(N_SER, serial, strlen(serial) );
 }
 
+void MiniBee::writeMePin( uint8_t mepin ){
+  eeprom_write_byte( (uint8_t *) CONFIG_BYTES + 1, mepin );
+  char info [2];
+  info[0] = (char) mepin;
+  info[1] = (char) me_pin;
+  send( N_INFO, info, 2 );
+}
+
+void MiniBee::readMePin(){
+  me_pin = (uint8_t) eeprom_read_byte( (uint8_t *) CONFIG_BYTES + 1 );
+  if ( me_pin > 19 || me_pin < 3 ){
+    me_pin = 4;
+  }
+  pinMode( me_pin, OUTPUT );
+  char info [2];
+  info[0] = (char) me_pin;
+  info[1] = (char) me_pin;
+  send( N_INFO, info, 2 );
+}
+
 void MiniBee::writeConfig(char *msg, uint8_t size) {
 // 	eeprom_write_byte((uint8_t *) i, id ); // writing id
 	for(i = 0;i < size;i++){
@@ -754,6 +794,8 @@ bool MiniBee::isValidPin( uint8_t id ){
 }
 
 void MiniBee::parseConfig(void){
+  char info [3];
+  
 	uint8_t pin = 0;
 	int datasizeout = 0;
 	datasize = 0;
@@ -770,6 +812,10 @@ void MiniBee::parseConfig(void){
 	    pin = i + PINOFFSET;
 	//    pin = pin_ids[i];
 	    if ( isValidPin( pin ) ){
+/*		 info[0] = (char) i;
+		 info[1] = (char) pin;
+		 info[2] = (char) config[i+4];
+		 send( N_INFO, info, 3 );*/
 		if ( custom_pin[ i ] ){
 		  config[i+4] = Custom;
 		  hasCustom = true;
@@ -851,14 +897,27 @@ void MiniBee::parseConfig(void){
 			    custom_pin[ i ] = true;
 			    hasCustom = true;
 			    break;
+			case MeID:
+			    me_pin = pin;
+			    pinMode( me_pin, OUTPUT );
+			    break;
 			case NotUsed:
 			    break;
 			case UnConfigured:
 			    break;
+// 			default:
+// 			    send( N_INFO, "unknown pin", 12 );
+// 			    break;
 		    }
 		}
 	    }
 	}
+
+	send( N_INFO, "parsed config", 14 );
+	writeMePin( me_pin );
+
+	readMePin();
+
 #if MINIBEE_ENABLE_TWI == 1
 // 	send( N_INFO, "checking twi", 13 );
 	if ( twiOn ){
@@ -880,6 +939,9 @@ void MiniBee::parseConfig(void){
 		break;
 	      case TWI_TMP102:
 		datasize += 2;
+		break;
+	      case TWI_HMC58X3:
+		datasize += 6;
 		break;
 	    }
 	  }
@@ -981,6 +1043,14 @@ void MiniBee::setupTWIdevices(void){
 		temp102->init();
 		// no setup needed
 		break;
+	      case TWI_HMC58X3:
+		hmc58x3 = (HMC5843*) malloc( sizeof( HMC5843 ) );
+// 		temp102 = new TMP102();
+		hmc58x3->init(false);
+		hmc58x3->calibrate(1); // Use gain 1=default, valid 0-7, 7 not recommended.
+		// Single mode conversion was used in calibration, now set continuous mode
+		hmc58x3->setMode(0);
+		break;
 	    }
 	}
 }
@@ -1040,6 +1110,18 @@ int MiniBee::readTWIdevices( int dboff ){
 		dbplus += 2;
 // 		dboff += 2;
 		break;
+	      case TWI_HMC58X3:
+		/// DOES THIS ONE RETURN SIGNED OR UNSIGNED INTS?
+		hmc58x3->getValuesInt( &accx, &accy, &accz );
+		accx2 = (unsigned int) ( accx + 2048 );
+		dataFromInt( accx2, dboff + dbplus );
+		dbplus += 2;
+		accy2 = (unsigned int) ( accy + 2048 );
+		dataFromInt( accy2, dboff + dbplus );
+		dbplus += 2;
+		accz2 = (unsigned int) ( accz + 2048 );
+		dataFromInt( accz2, dboff + dbplus );
+		dbplus += 2;
 	    }
 	}
 	return dbplus;

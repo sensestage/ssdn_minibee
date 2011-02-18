@@ -44,6 +44,7 @@
 #include <LIS302DL.h>
 #include <TMP102.h>
 #include <BMP085.h>
+#include <HMC5843.h>
 
 #endif
 
@@ -57,14 +58,16 @@ enum MiniBeePinConfig {
   TWIClock, TWIData,
   Ping,
   Custom = 100,
-  UnConfigured = 200
+  MeID = 150,
+  UnConfigured = 200,
 };
 
 enum TWIDeviceConfig { 
   TWI_ADXL345=10,
   TWI_LIS302DL=11,
   TWI_BMP085=20,
-  TWI_TMP102=30
+  TWI_TMP102=30,
+  TWI_HMC58X3=40
 };
 
 // extern "C" {
@@ -214,6 +217,7 @@ class MiniBee {
 		#define S_ANN 'A'
 		#define S_QUIT 'Q'
 		#define S_ID 'I'
+		#define S_ME 'M'
 		#define S_CONFIG 'C'
 		#define S_CUSTOM 'E'
 // 		#define S_FULL 'a'
@@ -257,6 +261,10 @@ class MiniBee {
 		int smpInterval;
 		char *outMessage;
 
+		void setMeLed( uint8_t );
+		void writeMePin( uint8_t );
+		void readMePin();
+		
 	//AT private commands
 		int atGetStatus(void);
 		void atSend(char *);
@@ -297,6 +305,8 @@ class MiniBee {
 		uint8_t ping_pin;	//ping pins (these could be more, but not right now)
 #endif
 
+
+		uint8_t me_pin;
 		bool analog_in[8]; // sets whether analog in on 
 		bool analog_precision[8]; // sets whether analog 10 bit precision is on or not
 
@@ -335,6 +345,7 @@ class MiniBee {
 		LIS302DL * accelLIS;
 		TMP102 * temp102;
 		BMP085 * bmp085;
+		HMC5843 * hmc58x3;
 #endif
 
 #if MINIBEE_ENABLE_SHT == 1
