@@ -2,7 +2,7 @@
 
 // #include <NewSoftSerial.h>
 
-uint8_t MiniBee::pwm_pins[] = { 3,5,6, 8,9,10 };
+uint8_t MiniBee::pwm_pins[] = { 3,5,6, 9,10,11 };
 
 #if MINIBEE_REVISION == 'B'
 	uint8_t MiniBee::pin_ids[] = {3,4,5,6,7,8,9,10,11, 14,15,16,17 ,18,19,20,21 }; // ids of I/O pins
@@ -511,23 +511,23 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 		case S_CONFIG:
 // 		  send( N_INFO, (char*) size, 1 );
 //  		  send( N_INFO, msg, size  );
-	    if ( remoteConfig ){
-		// check if right config_id:
-		if ( checkConfMsg( msg[0] ) ){
-		    if ( msg[1] == config_id ){
-			writeConfig( msg, size );
-			readConfig();
-      //                readConfigMsg( msg, size );
-			if ( hasInput ){
-			    status = SENSING;
-			} else if ( hasOutput ){
-			    status = ACTING;
+			if ( remoteConfig ){
+			// check if right config_id:
+			    if ( checkConfMsg( msg[0] ) ){
+				if ( (msg[1] == node_id) && (msg[2] == config_id) ){
+				    writeConfig( msg, size );
+				    readConfig();
+	      //                readConfigMsg( msg, size );
+				    if ( hasInput ){
+				      status = SENSING;
+				    } else if ( hasOutput ){
+				      status = ACTING;
+				    }
+	      //                send( N_INFO, "sensing", 7 );
+			      }
+			  }
 			}
-      //                send( N_INFO, "sensing", 7 );
-		    }
-		}
-	    }
-	    break;
+			break;
 		case S_RUN:
 			if ( checkNodeMsg( msg[0], msg[1] ) ){
 			  setRunning( msg[2] );
@@ -754,8 +754,8 @@ void MiniBee::readMePin(){
 
 void MiniBee::writeConfig(char *msg, uint8_t size) {
 // 	eeprom_write_byte((uint8_t *) i, id ); // writing id
-	for(i = 0;i < size;i++){
-	    eeprom_write_byte((uint8_t *) i, msg[i+1]);
+	for(i = 0;i < (size-2);i++){
+	    eeprom_write_byte((uint8_t *) i, msg[i+2]);
 	    //write byte to memory
 	}
 // 	send( N_INFO, msg, size );
@@ -763,7 +763,7 @@ void MiniBee::writeConfig(char *msg, uint8_t size) {
 
 void MiniBee::readConfigMsg(char *msg, uint8_t size){
 	config = (char*)malloc(sizeof(char) * size);
-	for(i = 0;i < size;i++){
+	for(i = 0;i < (size-1);i++){
 	  config[i] = msg[i+1];
 	}
 	parseConfig();
@@ -797,7 +797,7 @@ void MiniBee::parseConfig(void){
   char info [3];
   
 	uint8_t pin = 0;
-	int datasizeout = 0;
+	uint8_t datasizeout = 0;
 	datasize = 0;
 
 	free(outMessage);
@@ -848,9 +848,9 @@ void MiniBee::parseConfig(void){
 			case AnalogOut:
 			    for ( int j=0; j < 6; j++ ){
 				if ( pwm_pins[j] == pin ){
-				    pinMode( pin, OUTPUT );
+// 				    pinMode( pin, OUTPUT );
 				    pwm_on[j] = true;
-				    datasizeout++;
+				    datasizeout += 1;
 				    hasOutput = true;
 				}
 			    }
@@ -858,7 +858,7 @@ void MiniBee::parseConfig(void){
 			case DigitalOut:
 			    digital_out[ i ] = true;
 			    pinMode( pin , OUTPUT );
-			    datasizeout++;
+			    datasizeout += 1;
 			    hasOutput = true;
 			    break;
 	#if MINIBEE_ENABLE_SHT == 1
