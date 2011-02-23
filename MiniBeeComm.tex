@@ -54,7 +54,7 @@ Serial number & 's' & Serial High (SH) + Serial Low (SL) +& \\
 			&	  & + library version + board revision + capabilities & node\\
 ID assignment & 'I' & msgID + SH + SL + node ID + (*config ID*) & server \\
 Wait for config & 'w' & node ID + config ID & node \\
-Configuration & 'C' & msg ID + config ID + configuration bytes & server \\
+Configuration & 'C' & msg ID + node ID + config ID + configuration bytes & server \\
 Confirm config & 'c' & node ID + config ID + smpMsg + msgInt + & \\
                            &        & + datasize + outsize + (*custom*) & node \\
 (*custom*) &  & N x (custom pin, data size) & \\
