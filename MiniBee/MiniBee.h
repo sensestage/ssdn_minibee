@@ -11,6 +11,14 @@
 #define MINIBEE_ENABLE_SHT 1  /// SHT takes up 1140 bytes
 #define MINIBEE_ENABLE_PING 1 /// Ping takes up 440 bytes
 
+/// all in: 19138 bytes
+// specific TWI devices
+#define MINIBEE_ENABLE_TWI_ADXL 1 /// 962 bytes - without: 18176
+#define MINIBEE_ENABLE_TWI_LISDL 1 /// 614 bytes - without: 18524
+#define MINIBEE_ENABLE_TWI_HMC 1 /// 1644 bytes - without: 17494 
+#define MINIBEE_ENABLE_TWI_BMP 1 /// 4182 bytes - without: 14956
+#define MINIBEE_ENABLE_TWI_TMP 1 /// 250 bytes - without: 18888
+
 // #include <avr/interrupt.h>
 #include <avr/eeprom.h>
 #include <inttypes.h>
@@ -40,11 +48,25 @@
 #if MINIBEE_ENABLE_TWI == 1
 #include <Wire.h>
 
+#if MINIBEE_ENABLE_TWI_ADXL == 1
 #include <ADXL345.h>
+#endif
+
+#if MINIBEE_ENABLE_TWI_LISDL == 1
 #include <LIS302DL.h>
+#endif
+
+#if MINIBEE_ENABLE_TWI_TMP == 1
 #include <TMP102.h>
+#endif
+
+#if MINIBEE_ENABLE_TWI_BMP == 1
 #include <BMP085.h>
+#endif
+
+#if MINIBEE_ENABLE_TWI_HMC == 1
 #include <HMC5843.h>
+#endif
 
 #endif
 
@@ -340,12 +362,22 @@ class MiniBee {
 #endif*/
 		uint8_t * twi_devices;
 		uint8_t nr_twi_devices;
-		
+
+#if MINIBEE_ENABLE_TWI_ADXL == 1
 		ADXL345 * accelADXL;
+#endif
+#if MINIBEE_ENABLE_TWI_LISDL == 1
 		LIS302DL * accelLIS;
+#endif
+#if MINIBEE_ENABLE_TWI_TMP == 1
 		TMP102 * temp102;
+#endif
+#if MINIBEE_ENABLE_TWI_BMP == 1
 		BMP085 * bmp085;
+#endif
+#if MINIBEE_ENABLE_TWI_HMC == 1
 		HMC5843 * hmc58x3;
+#endif
 #endif
 
 #if MINIBEE_ENABLE_SHT == 1

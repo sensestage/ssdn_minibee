@@ -928,21 +928,31 @@ void MiniBee::parseConfig(void){
 	  for(i = 0;i < nr_twi_devices; i++ ){
 	    twi_devices[i] = config[PIN_CONFIG_BYTES+5+i];
 	    switch( twi_devices[i] ){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
 	      case TWI_ADXL345:
 		datasize += 6;
 		break;
+#endif
+#if MINIBEE_ENABLE_TWI_LISDL == 1
 	      case TWI_LIS302DL:
 		datasize += 6;
 		break;
+#endif
+#if MINIBEE_ENABLE_TWI_BMP == 1
 	      case TWI_BMP085:
 		datasize += 8; // 2 byte int, 3 byte long, 3 byte long
 		break;
+#endif
+#if MINIBEE_ENABLE_TWI_TMP == 1
 	      case TWI_TMP102:
 		datasize += 2;
 		break;
+#endif
+#if MINIBEE_ENABLE_TWI_HMC == 1
 	      case TWI_HMC58X3:
 		datasize += 6;
 		break;
+#endif
 	    }
 	  }
 // 	  send( N_INFO, (char*) twi_devices, nr_twi_devices );
@@ -1011,6 +1021,7 @@ bool MiniBee::getFlagTWI(void) {
 void MiniBee::setupTWIdevices(void){
 	for(i = 0;i < nr_twi_devices; i++ ){
 	  switch( twi_devices[i] ){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
 	      case TWI_ADXL345:
 		accelADXL = (ADXL345*) malloc( sizeof( ADXL345 ) );
 		accelADXL->init();
@@ -1020,11 +1031,15 @@ void MiniBee::setupTWIdevices(void){
 		accelADXL->setFullResBit( true );
 		accelADXL->setRangeSetting( 16 ); // 2: 2g, 4: 4g, 8: 8g, 16: 16g
 		break;
+#endif
+#if MINIBEE_ENABLE_TWI_LISDL == 1
 	      case TWI_LIS302DL:
 		accelLIS = (LIS302DL*) malloc( sizeof( LIS302DL ) );
 // 		accelLIS = new LIS302DL();
 		accelLIS->setup();
 		break;
+#endif
+#if MINIBEE_ENABLE_TWI_BMP == 1
 	      case TWI_BMP085:
 		bmp085 = (BMP085*) malloc( sizeof( BMP085 ) );
 // 		bmp085 = new BMP085();
@@ -1037,12 +1052,16 @@ void MiniBee::setupTWIdevices(void){
                   // this initialization is useful if current altitude is known,
                   // pressure will be calculated based on TruePressure and known altitude.
 		break;
+#endif
+#if MINIBEE_ENABLE_TWI_TMP == 1
 	      case TWI_TMP102:
  		temp102 = (TMP102*) malloc( sizeof( TMP102 ) );
 // 		temp102 = new TMP102();
 		temp102->init();
 		// no setup needed
 		break;
+#endif
+#if MINIBEE_ENABLE_TWI_HMC == 1
 	      case TWI_HMC58X3:
 		hmc58x3 = (HMC5843*) malloc( sizeof( HMC5843 ) );
 // 		temp102 = new TMP102();
@@ -1051,6 +1070,7 @@ void MiniBee::setupTWIdevices(void){
 		// Single mode conversion was used in calibration, now set continuous mode
 		hmc58x3->setMode(0);
 		break;
+#endif
 	    }
 	}
 }
@@ -1065,6 +1085,7 @@ int MiniBee::readTWIdevices( int dboff ){
 
 	for(i = 0;i < nr_twi_devices; i++ ){
 	  switch( twi_devices[i] ){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
 	      case TWI_ADXL345:
 		accelADXL->readAccel( &accx, &accy, &accz );
 		accx2 = (unsigned int) (accx + 4096); // from twos complement signed int to unsigned int
@@ -1076,6 +1097,8 @@ int MiniBee::readTWIdevices( int dboff ){
 // 		dboff += 6;
 		dbplus =+ 6;
 		break;
+#endif
+#if MINIBEE_ENABLE_TWI_LISDL == 1
 	      case TWI_LIS302DL:
 		accelLIS->read( &accx, &accy, &accz );
 		accx2 = (unsigned int) (accx + 2048); // from twos complement signed int to unsigned int
@@ -1087,6 +1110,8 @@ int MiniBee::readTWIdevices( int dboff ){
 		dbplus += 6;
 // 		dboff += 6;
 		break;
+#endif
+#if MINIBEE_ENABLE_TWI_BMP == 1
 	      case TWI_BMP085:
 		bmp085->getTemperature( &bmpT );
 		accx2 = (unsigned int) ( (bmpT + 273 ) * 100 ); // temperature in centi - Kelvin
@@ -1103,6 +1128,8 @@ int MiniBee::readTWIdevices( int dboff ){
 		dataFromLong24( bmpConv, dboff + dbplus );
 		dbplus += 3;
 		break;
+#endif
+#if MINIBEE_ENABLE_TWI_TMP == 1
 	      case TWI_TMP102:
 		temp102->readTemp();
 		accx2 = (unsigned int) ( temp102->currentTemp + 2048 );
@@ -1110,6 +1137,8 @@ int MiniBee::readTWIdevices( int dboff ){
 		dbplus += 2;
 // 		dboff += 2;
 		break;
+#endif
+#if MINIBEE_ENABLE_TWI_HMC == 1
 	      case TWI_HMC58X3:
 		/// DOES THIS ONE RETURN SIGNED OR UNSIGNED INTS?
 		hmc58x3->getValuesInt( &accx, &accy, &accz );
@@ -1122,6 +1151,8 @@ int MiniBee::readTWIdevices( int dboff ){
 		accz2 = (unsigned int) ( accz + 2048 );
 		dataFromInt( accz2, dboff + dbplus );
 		dbplus += 2;
+		break;
+#endif
 	    }
 	}
 	return dbplus;
