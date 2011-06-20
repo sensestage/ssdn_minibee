@@ -3,7 +3,7 @@
 #ifndef MiniBee_h
 #define MiniBee_h
 
-#define MINIBEE_REVISION 'B'
+#define MINIBEE_REVISION 'D'
 #define MINIBEE_LIBVERSION 3
 
 /// all together: 3644 bytes
@@ -38,6 +38,9 @@
 #define MINIBEE_ENABLE_PING 1
 #endif
 
+#if MINIBEE_REVISION == 'D'
+#define NRPINS 17
+#endif
 #if MINIBEE_REVISION == 'B'
 #define NRPINS 17
 #endif
@@ -284,8 +287,8 @@ class MiniBee {
 		char *outMessage;
 
 		void setMeLed( uint8_t );
-		void writeMePin( uint8_t );
-		void readMePin();
+// 		void writeMePin( uint8_t );
+		void setupMePin();
 		
 	//AT private commands
 		int atGetStatus(void);
@@ -339,10 +342,12 @@ class MiniBee {
 		bool digital_out[NRPINS]; // sets whether digital out on
 		char digital_values[NRPINS];
 		
-		bool isValidPin( uint8_t id );
-		static uint8_t pin_ids[]; // = { 3,5,6, 8,9,10 };
-
-		#define ANAOFFSET 11
+		uint8_t isIOPin( uint8_t id );
+		uint8_t isAnalogPin( uint8_t id );
+		static uint8_t pin_ids[]; 
+		static uint8_t anapin_ids[]; 
+		
+// 		#define ANAOFFSET 11
 
 		bool digital_in[NRPINS]; // sets whether digital in on
 

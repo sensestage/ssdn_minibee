@@ -4,12 +4,23 @@
 
 uint8_t MiniBee::pwm_pins[] = { 3,5,6, 9,10,11 };
 
+#if MINIBEE_REVISION == 'D'
+	uint8_t MiniBee::pin_ids[] = {3, 4, 5,6, 7,8, 9,10,11, 14,15,16,17 ,18,19, 20,21 }; // ids of I/O pins
+	// pin 4 is not actually used anymore - it is now the ME led
+	// 18,19 are TWI
+	// 3,5,6,7,8,9,10,11 are digital pins
+	// 14,15,16,17,20,21 are analog pins
+	uint8_t MiniBee::anapin_ids[] = {14,15,16,17 ,20,21 }; // ids of I/O pins	
+//		#define ANAOFFSET 9
+#endif
 #if MINIBEE_REVISION == 'B'
 	uint8_t MiniBee::pin_ids[] = {3,4,5,6,7,8,9,10,11, 14,15,16,17 ,18,19,20,21 }; // ids of I/O pins
 //		#define ANAOFFSET 9
+	uint8_t MiniBee::anapin_ids[] = {14,15,16,17 ,20,21 }; // ids of I/O pins	
 #endif
 #if MINIBEE_REVISION == 'A'
 	uint8_t MiniBee::pin_ids[] = {3,4,5,6,7,8,9,10,11, 12,13, 14,15,16,17 ,18,19,20,21 }; // ids of I/O pins
+	uint8_t MiniBee::anapin_ids[] = {14,15,16,17 18,19,20,21 }; // ids of I/O pins	
 #endif
 
 
@@ -77,7 +88,7 @@ MiniBee::MiniBee() {
 
 void MiniBee::openSerial(long baud_rate) {
 	Serial.begin(baud_rate);
-	readMePin();
+	setupMePin();
 }
 
 void MiniBee::configXBee(){
@@ -660,15 +671,21 @@ uint8_t MiniBee::readSensors( uint8_t db ){
 	    }
 	}
     }
+    
+//     char diginfo[NRPINS];
+    
     // read digital sensors
     for ( i = 0; i < NRPINS; i++ ){
+//       diginfo[i] = (char) digital_in[i];
 	if ( digital_in[i] ){
 	//TODO this can be done way more clever by shifting the results into 3 bytes, resulting in shorter messages to be sent.
 	    data[db] = digitalRead( pin_ids[i] );
 	    db++;
 	}
     }
-    
+
+//     send( N_INFO, diginfo, NRPINS );
+
 #if MINIBEE_ENABLE_TWI == 1
     // read I2C/two wire interface for all devices
     int dbinc;
@@ -732,24 +749,17 @@ void MiniBee::sendSerialNumber(void){
 //	send(N_SER, serial, strlen(serial) );
 }
 
-void MiniBee::writeMePin( uint8_t mepin ){
-  eeprom_write_byte( (uint8_t *) CONFIG_BYTES + 1, mepin );
-  char info [2];
-  info[0] = (char) mepin;
-  info[1] = (char) me_pin;
-  send( N_INFO, info, 2 );
-}
+// void MiniBee::writeMePin( uint8_t mepin ){
+//   eeprom_write_byte( (uint8_t *) CONFIG_BYTES + 1, mepin );
+//   char info [2];
+//   info[0] = (char) mepin;
+//   info[1] = (char) me_pin;
+//   send( N_INFO, info, 2 );
+// }
 
-void MiniBee::readMePin(){
-  me_pin = (uint8_t) eeprom_read_byte( (uint8_t *) CONFIG_BYTES + 1 );
-  if ( me_pin > 19 || me_pin < 3 ){
-    me_pin = 4;
-  }
+void MiniBee::setupMePin(){
+  me_pin = 4;
   pinMode( me_pin, OUTPUT );
-  char info [2];
-  info[0] = (char) me_pin;
-  info[1] = (char) me_pin;
-  send( N_INFO, info, 2 );
 }
 
 void MiniBee::writeConfig(char *msg, uint8_t size) {
@@ -783,11 +793,21 @@ void MiniBee::readConfig(void) {
 	free(config);
 }
 
-bool MiniBee::isValidPin( uint8_t id ){
-  bool isvalid = false;
+uint8_t MiniBee::isIOPin( uint8_t id ){
+  uint8_t isvalid = 20;
   for ( uint8_t j = 0; j<NRPINS; j++ ){
       if ( pin_ids[j] == id ){
-	  isvalid = true;
+	  isvalid = j;
+      }
+  }
+  return isvalid;
+}
+
+uint8_t MiniBee::isAnalogPin( uint8_t id ){
+  uint8_t isvalid = 7;
+  for ( uint8_t j = 0; j<6; j++ ){
+      if ( anapin_ids[j] == id ){
+	  isvalid = j;
       }
   }
   return isvalid;
@@ -796,6 +816,9 @@ bool MiniBee::isValidPin( uint8_t id ){
 void MiniBee::parseConfig(void){
   char info [3];
   
+	uint8_t anapin;
+	uint8_t iopin;
+	uint8_t cfpin;
 	uint8_t pin = 0;
 	uint8_t datasizeout = 0;
 	datasize = 0;
@@ -809,39 +832,43 @@ void MiniBee::parseConfig(void){
 // 	send( N_INFO, config, CONFIG_BYTES );
 	
 	for(i = 0;i < PIN_CONFIG_BYTES;i++){
-	    pin = i + PINOFFSET;
-	//    pin = pin_ids[i];
-	    if ( isValidPin( pin ) ){
+	    cfpin = i + PINOFFSET; // index based on config bytes (pins 3 t/m 21)
+// 	    pin = pin_ids[i];
+	    iopin = isIOPin( cfpin ); // index into pin_ids
+	    if ( iopin < NRPINS ){
+		pin = pin_ids[ iopin ]; // actual pin number
 /*		 info[0] = (char) i;
 		 info[1] = (char) pin;
 		 info[2] = (char) config[i+4];
 		 send( N_INFO, info, 3 );*/
-		if ( custom_pin[ i ] ){
+		if ( custom_pin[ iopin ] ){
 		  config[i+4] = Custom;
 		  hasCustom = true;
-		} else {
-		    switch( config[i+4] ){
+		}
+		switch( config[i+4] ){
 			case AnalogIn10bit:
-			    if ( i >= ANAOFFSET ){
-				analog_precision[i-ANAOFFSET] = true;
-				analog_in[i-ANAOFFSET] = true;
-				pinMode( pin, INPUT );
+			    anapin = isAnalogPin( pin );
+			    if ( anapin < 7 ){ // check whether analog pin
+				analog_precision[ anapin ] = true;
+				analog_in[ anapin ] = true;
+// 				pinMode( pin, INPUT );
 				datasize += 2;
 				hasInput = true;
 			    }
 			    break;
 			case AnalogIn:
-			    if ( i >= ANAOFFSET ){
-				analog_precision[i-ANAOFFSET] = false;
-				analog_in[i-ANAOFFSET] = true;
-				pinMode( pin, INPUT );
+			    anapin = isAnalogPin( pin );
+			    if ( anapin < 7 ){ // check whether analog pin
+				analog_precision[ anapin ] = false;
+				analog_in[ anapin ] = true;
+// 				pinMode( pin, INPUT );
 				datasize += 1;
 				hasInput = true;
 			    }
 			    break;
 			case DigitalIn:
 			    pinMode( pin, INPUT );
-			    digital_in[i] = true;
+			    digital_in[iopin] = true;
 			    datasize += 1;
 			    hasInput = true;
 			    break;
@@ -856,7 +883,7 @@ void MiniBee::parseConfig(void){
 			    }
 			    break;
 			case DigitalOut:
-			    digital_out[ i ] = true;
+			    digital_out[ iopin ] = true;
 			    pinMode( pin , OUTPUT );
 			    datasizeout += 1;
 			    hasOutput = true;
@@ -894,13 +921,13 @@ void MiniBee::parseConfig(void){
 	#endif
 			case Custom:
 			    // pin is used in the custom part of the firmware
-			    custom_pin[ i ] = true;
+			    custom_pin[ iopin ] = true;
 			    hasCustom = true;
 			    break;
-			case MeID:
+/*			case MeID:
 			    me_pin = pin;
 			    pinMode( me_pin, OUTPUT );
-			    break;
+			    break;*/
 			case NotUsed:
 			    break;
 			case UnConfigured:
@@ -908,15 +935,15 @@ void MiniBee::parseConfig(void){
 // 			default:
 // 			    send( N_INFO, "unknown pin", 12 );
 // 			    break;
-		    }
+// 		    }
 		}
 	    }
 	}
 
-	send( N_INFO, "parsed config", 14 );
-	writeMePin( me_pin );
+// 	send( N_INFO, "parsed config", 14 );
+// 	writeMePin( me_pin );
 
-	readMePin();
+// 	readMePin();
 
 #if MINIBEE_ENABLE_TWI == 1
 // 	send( N_INFO, "checking twi", 13 );
