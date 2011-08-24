@@ -208,7 +208,7 @@ class MBSerial {
 // 		void SerialEvent(void);
 
 	private:
-		#define PIN_CONFIG_BYTES 19 // 23 for base config. 4 for other stuff, so 19 for the pins
+		#define PIN_CONFIG_BYTES 20 // 23 for base config. 4 for other stuff, so 19 for the pins
 		#define CONFIG_BYTES 64 // 23 for pin configs. then some for twi configuration (which is variable!)
 		
 		#define MAX_MESSAGE_SIZE 64

@@ -71,7 +71,7 @@ MBSerial::MBSerial() {
 	hasInput = false;
 	hasOutput = false;
 	hasCustom = false;
-	serial = "0000000000000";
+	serial = "00000000000000\0";
 #if MINIBEE_ENABLE_TWI_ADXL == 1
 	accelADXL = NULL;
 #endif
@@ -99,7 +99,8 @@ int MBSerial::dataSize(){
 void MBSerial::begin(long baud_rate) {
 	openSerial(baud_rate);
 	delay( 100 );
-	status = WAITFORHOST;
+	status = STARTING;
+	sendSerialNumber();
 }
 
 void MBSerial::doLoopStep(void){
@@ -118,8 +119,9 @@ void MBSerial::doLoopStep(void){
 	  delay( smpInterval );
 	  break;
       case STARTING:
+	  sendSerialNumber();
 //          send( N_INFO, "starting", 8 );
-	  delay( 100 );
+	  delay( 1000 );
 	  break;
       case WAITFORCONFIG:
 //          send( N_INFO, "waitforconfig" );
@@ -651,7 +653,7 @@ void MBSerial::readConfig(void) {
 }
 
 uint8_t MBSerial::isIOPin( uint8_t id ){
-  uint8_t isvalid = 20;
+  uint8_t isvalid = 21;
   for ( uint8_t j = 0; j<NRPINS; j++ ){
       if ( pin_ids[j] == id ){
 	  isvalid = j;
