@@ -82,6 +82,9 @@ MiniBee::MiniBee() {
 	hasOutput = false;
 	hasCustom = false;
 
+#if MINIBEE_ENABLE_TWI_ADXL == 1
+	accelADXL = NULL;
+#endif
 }
 
 // MiniBee Bee = MiniBee();
@@ -607,7 +610,9 @@ void MiniBee::setSetting( char * msg, uint8_t offset ){
 
 void MiniBee::setADXL_range( char newrange ){
 #if MINIBEE_ENABLE_TWI_ADXL == 1
-  accelADXL->setRangeSetting( newrange );
+  if ( accelADXL != NULL ){
+    accelADXL->setRangeSetting( newrange );
+  }
 #endif
 }
 
