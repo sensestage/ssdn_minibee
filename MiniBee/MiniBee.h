@@ -244,6 +244,7 @@ class MiniBee {
 		#define S_ID 'I'
 		#define S_ME 'M'
 		#define S_CONFIG 'C'
+		#define S_SETTING 'S'
 		#define S_CUSTOM 'E'
 // 		#define S_FULL 'a'
 // 		#define S_LIGHT 'l'
@@ -330,6 +331,8 @@ class MiniBee {
 		uint8_t ping_pin;	//ping pins (these could be more, but not right now)
 #endif
 
+		void setSetting( char * msg, uint8_t offset );
+		void setADXL_range( char newrange );
 
 		uint8_t me_pin;
 		bool analog_in[8]; // sets whether analog in on 

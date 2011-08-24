@@ -539,6 +539,10 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 			  }
 			}
 			break;
+		case S_SETTING:
+		  if ( checkNodeMsg( msg[0], msg[1] ) ){
+		      setSetting( msg, size );
+		  }
 		case S_RUN:
 			if ( checkNodeMsg( msg[0], msg[1] ) ){
 			  setRunning( msg[2] );
@@ -592,7 +596,20 @@ void MiniBee::setMeLed( uint8_t onoff ){
     digitalWrite( me_pin, onoff );
 }
 
+void MiniBee::setSetting( char * msg, uint8_t offset ){
+  i = offset;
+  switch ( msg[i] ){
+    case 'a': // set range setting for ADXL345
+      setADXL_range( msg[i+1] );
+      break;
+  }
+}
 
+void MiniBee::setADXL_range( char newrange ){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
+  accelADXL->setRangeSetting( newrange );
+#endif
+}
 
 void MiniBee::setRemoteConfig( bool onoff ){
     remoteConfig = onoff;
@@ -1056,7 +1073,7 @@ void MiniBee::setupTWIdevices(void){
 		accelADXL->powerOn();
 		accelADXL->setJustifyBit( false );
 		accelADXL->setFullResBit( true );
-		accelADXL->setRangeSetting( 16 ); // 2: 2g, 4: 4g, 8: 8g, 16: 16g
+		accelADXL->setRangeSetting( 2 ); // 2: 2g, 4: 4g, 8: 8g, 16: 16g
 		break;
 #endif
 #if MINIBEE_ENABLE_TWI_LISDL == 1
