@@ -208,7 +208,7 @@ class MBSerial {
 // 		void SerialEvent(void);
 
 	private:
-		#define PIN_CONFIG_BYTES 20 // 23 for base config. 4 for other stuff, so 19 for the pins
+		#define PIN_CONFIG_BYTES 18 // 23 for base config. 4 for other stuff, so 19 for the pins
 		#define CONFIG_BYTES 64 // 23 for pin configs. then some for twi configuration (which is variable!)
 		
 		#define MAX_MESSAGE_SIZE 64
@@ -339,7 +339,7 @@ class MBSerial {
 		uint8_t custom_size[NRPINS]; // sets size of custom pin data
 		uint8_t customDataSize;
 
-		#define PINOFFSET 3
+		#define PINOFFSET 2
 
 #if MINIBEE_ENABLE_TWI == 1
 /*#if MINIBEE_REVISION == 'A'

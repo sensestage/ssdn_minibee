@@ -5,7 +5,7 @@
 uint8_t MBSerial::pwm_pins[] = { 3,5,6, 9,10,11 };
 
 // arduino directly connected
-	uint8_t MBSerial::pin_ids[] = {2,3, 4, 5,6, 7,8, 9,10,11,12,13, 14,15,16,17 ,18,19, 20,21 }; // ids of I/O pins
+	uint8_t MBSerial::pin_ids[] = {2,3, 4,5, 6,7, 8,9, 10,11, 12,13, 14,15, 16,17 ,18,19 }; // ids of I/O pins
 	// pin 4 is not actually used anymore - it is now the ME led
 	// 18,19 are TWI
 	// 3,5,6,7,8,9,10,11 are digital pins
