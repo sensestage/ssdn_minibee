@@ -85,6 +85,18 @@ MiniBee::MiniBee() {
 #if MINIBEE_ENABLE_TWI_ADXL == 1
 	accelADXL = NULL;
 #endif
+#if MINIBEE_ENABLE_TWI_LISDL == 1
+	accelLIS = NULL;
+#endif
+#if MINIBEE_ENABLE_TWI_BMP == 1
+	bmp085 = NULL;
+#endif
+#if MINIBEE_ENABLE_TWI_TMP == 1
+	temp102 = NULL;
+#endif
+#if MINIBEE_ENABLE_TWI_HMC == 1
+	hmc58x3 = NULL;
+#endif
 }
 
 // MiniBee Bee = MiniBee();
@@ -1116,6 +1128,36 @@ bool MiniBee::getFlagTWI(void) {
 }
 
 void MiniBee::setupTWIdevices(void){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
+  if ( accelADXL != NULL ){
+      free( accelADXL );
+      accelADXL = NULL;
+  }
+#endif
+#if MINIBEE_ENABLE_TWI_LISDL == 1
+  if ( accelLIS != NULL ){
+      free( accelLIS );
+      accelLIS = NULL;
+  }
+#endif
+#if MINIBEE_ENABLE_TWI_BMP == 1
+  if ( bmp085 != NULL ){
+      free( bmp085 );
+      bmp085 = NULL;
+  }
+#endif
+#if MINIBEE_ENABLE_TWI_TMP == 1
+  if ( temp102 != NULL ){
+      free( temp102 );
+      temp102 = NULL;
+  }
+#endif
+#if MINIBEE_ENABLE_TWI_HMC == 1
+  if ( hmc58x3 != NULL ){
+      free( hmc58x3 );
+      hmc58x3 = NULL;
+  }
+#endif
 	for(i = 0;i < nr_twi_devices; i++ ){
 	  switch( twi_devices[i] ){
 #if MINIBEE_ENABLE_TWI_ADXL == 1
