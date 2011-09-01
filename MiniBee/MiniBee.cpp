@@ -129,6 +129,7 @@ void MiniBee::begin(long baud_rate) {
 // 	send( N_INFO, "read serial", 12 );
 
  	sendSerialNumber();
+	actcount = 0;
 
 	status = WAITFORHOST;
 }
@@ -153,7 +154,6 @@ void MiniBee::doLoopStep(void){
   // do something based on current status:
   switch( status ){
       case SENSING:
-	  //send( N_INFO, "sensing" );
 	  // read sensors:
 	  datacount = readSensors( datacount );
 	  if ( curSample >= samplesPerMsg ){
@@ -169,18 +169,38 @@ void MiniBee::doLoopStep(void){
 	  break;
       case WAITFORCONFIG:
 //          send( N_INFO, "waitforconfig" );
-	  delay( 100 );
-	  break;
+	if ( actcount == 0 ){ // send the wait message every 10 seconds
+	  send( N_WAIT, configInfo, 2 );
+	}
+	actcount++;
+	actcount = actcount%100;
+	delay( 100 );
+	break;
       case WAITFORHOST:
 //       send( N_INFO, "waitforhost" );
-	  delay( 100 );
-	  break;
+	if ( actcount == 0 ){ // send the serial number every 10 seconds
+	  sendSerialNumber();
+	}
+	actcount++;
+	actcount = actcount%100;
+	delay( 100 );
+	break;
       case ACTING:
-	  delay( smpInterval );
-	  break;
+	if ( actcount == 0 ){ // send an I'm active message every 100 smpIntervals
+	  sendActive();
+	}
+	actcount++;
+	actcount = actcount%100;
+	delay( smpInterval );
+	break;
       case PAUSING:
-	  delay( 500 );
-	  break;
+	if ( actcount == 0 ){ // send an I'm active message every 100 smpIntervals
+	  sendPaused();
+	}
+	actcount++;
+	actcount = actcount%100;
+	delay( 500 );
+	break;
     }
   
     // read any new data from XBee:
@@ -491,7 +511,7 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 				    if ( size == (len+3) ){
 					config_id = msg[len+2];
 					status = WAITFORCONFIG;
-					char configInfo[2];
+// 					char configInfo[2];
 					configInfo[0] = node_id;
 					configInfo[1] = config_id;
 					send( N_WAIT, configInfo, 2 );
@@ -535,6 +555,7 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 				    if ( hasInput ){
 				      status = SENSING;
 				    } else if ( hasOutput ){
+				      actcount = 0;
 				      status = ACTING;
 				    }
 	      //                send( N_INFO, "sensing", 7 );
@@ -622,10 +643,15 @@ void MiniBee::setRemoteConfig( bool onoff ){
 
 void MiniBee::setRunning( uint8_t onoff ){
     if ( onoff == 1 ){
-	status = SENSING;
+      	if ( hasInput ){
+	    status = SENSING;
+	} else if ( hasOutput ){
+	    status = ACTING;
+	}
     } else if ( onoff == 0 ){
 	status = PAUSING;
     }
+    actcount = 0;
 }
 
 void MiniBee::setLoopback( uint8_t onoff ){
@@ -751,6 +777,28 @@ void MiniBee::sendData(void){
 // 	outMessage[i+2] = data[i];
 //     }
     send( N_DATA, outMessage, datacount+2 );
+}
+
+void MiniBee::sendActive(void){
+    msg_id_send++;
+    msg_id_send = msg_id_send%256;
+    outMessage[0] = node_id;
+    outMessage[1] = msg_id_send;
+//     for ( i=0; i < datacount; i++ ){
+// 	outMessage[i+2] = data[i];
+//     }
+    send( N_ACTIVE, outMessage, 2 );
+}
+
+void MiniBee::sendPaused(void){
+    msg_id_send++;
+    msg_id_send = msg_id_send%256;
+    outMessage[0] = node_id;
+    outMessage[1] = msg_id_send;
+//     for ( i=0; i < datacount; i++ ){
+// 	outMessage[i+2] = data[i];
+//     }
+    send( N_PAUSED, outMessage, 2 );
 }
 
 uint8_t MiniBee::getId(void) { 
@@ -1078,7 +1126,7 @@ void MiniBee::setupTWIdevices(void){
 		accelADXL->powerOn();
 		accelADXL->setJustifyBit( false );
 		accelADXL->setFullResBit( true );
-		accelADXL->setRangeSetting( 2 ); // 2: 2g, 4: 4g, 8: 8g, 16: 16g
+		accelADXL->setRangeSetting( 16 ); // 2: 2g, 4: 4g, 8: 8g, 16: 16g
 		break;
 #endif
 #if MINIBEE_ENABLE_TWI_LISDL == 1

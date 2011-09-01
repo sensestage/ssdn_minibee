@@ -156,6 +156,8 @@ class MiniBee {
 	
 	// send data
 		void sendData( void );
+		void sendActive( void );
+		void sendPaused( void );
 
 		uint8_t getId(void);
 		void sendSerialNumber(void);
@@ -255,6 +257,11 @@ class MiniBee {
 		#define N_INFO 'i'
 		#define N_WAIT 'w'
 		#define N_CONF 'c'
+		#define N_ACTIVE 'a'
+		#define N_PAUSED 'p'
+		
+		uint8_t actcount;
+		char configInfo[2];
 		
 		uint8_t i;
 		uint8_t byte_index;
