@@ -59,7 +59,7 @@ Wait for config & 'w' & node ID + config ID & node \\
 Configuration & 'C' & msg ID + node ID + config ID + configuration bytes & server \\
 Confirm config & 'c' & node ID + config ID + smpMsg + msgInt + & \\
                            &        & + datasize + outsize + (*custom*) & node \\
-(*custom*) &  & N x (custom pin, data size) & \\
+(*custom*) &  & customInputs + customDataSize + N x (custom pin, data size) & \\
 \hline
 % "full package" (Chronotopia) & 'a' & 6 * 6 + 3 values & server \\
 % "light" (PWM up to now)      & 'l' & node ID + 6 values & server
