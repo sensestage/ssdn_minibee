@@ -11,16 +11,20 @@ uint8_t MiniBee::pwm_pins[] = { 3,5,6, 9,10,11 };
 	// 3,5,6,7,8,9,10,11 are digital pins
 	// 14,15,16,17,20,21 are analog pins
 	uint8_t MiniBee::anapin_ids[] = {14,15,16,17 ,20,21 }; // ids of I/O pins	
+	uint8_t MiniBee::anapin_read_ids[] = {0,1,2,3, 6,7 }; // ids of I/O pins	
 //		#define ANAOFFSET 9
+	#define ANAPINS 6
 #endif
 #if MINIBEE_REVISION == 'B'
 	uint8_t MiniBee::pin_ids[] = {3,4,5,6,7,8,9,10,11, 14,15,16,17 ,18,19,20,21 }; // ids of I/O pins
 //		#define ANAOFFSET 9
 	uint8_t MiniBee::anapin_ids[] = {14,15,16,17 ,20,21 }; // ids of I/O pins	
+	uint8_t MiniBee::anapin_read_ids[] = {0,1,2,3, 6,7 }; // ids of I/O pins	
 #endif
 #if MINIBEE_REVISION == 'A'
 	uint8_t MiniBee::pin_ids[] = {3,4,5,6,7,8,9,10,11, 12,13, 14,15,16,17 ,18,19,20,21 }; // ids of I/O pins
-	uint8_t MiniBee::anapin_ids[] = {14,15,16,17 18,19,20,21 }; // ids of I/O pins	
+	uint8_t MiniBee::anapin_ids[] = {14,15,16,17, 18,19,20,21 }; // ids of I/O pins	
+	uint8_t MiniBee::anapin_read_ids[] = {0,1,2,3, 4,5,6,7 }; // ids of I/O pins	
 #endif
 
 
@@ -719,14 +723,14 @@ void MiniBee::dataFromLong24( unsigned long output, int offset ){
 uint8_t MiniBee::readSensors( uint8_t db ){
     unsigned int value;
     // read analog sensors
-    for ( i = 0; i < 8; i++ ){
+    for ( i = 0; i < ANAPINS; i++ ){
 	if ( analog_in[i] ){
 	    if ( analog_precision[i] ){
-		value = analogRead(i);
+		value = analogRead( anapin_read_ids[i] );
 		dataFromInt( value, db );
 		db += 2;
 	    } else {
-		data[db] = analogRead(i)/4;
+		data[db] = analogRead( anapin_read_ids[i] )/4;
 		db++;      
 	    }
 	}

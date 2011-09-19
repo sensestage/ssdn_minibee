@@ -356,6 +356,7 @@ class MiniBee {
 		uint8_t isAnalogPin( uint8_t id );
 		static uint8_t pin_ids[]; 
 		static uint8_t anapin_ids[]; 
+		static uint8_t anapin_read_ids[]; 
 		
 // 		#define ANAOFFSET 11
 
