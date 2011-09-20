@@ -1,23 +1,27 @@
 // #include <ADXL345.h>
 
-#ifndef MiniBee_h
-#define MiniBee_h
+#ifndef MiniBee_api_h
+#define MiniBee_api_h
+
+#include <XBee.h>
 
 #define MINIBEE_REVISION 'D'
-#define MINIBEE_LIBVERSION 3
+#define MINIBEE_LIBVERSION 4
 
 /// all together: 3644 bytes
-#define MINIBEE_ENABLE_TWI 1  /// TWI/I2C takes up 2064 bytes
-#define MINIBEE_ENABLE_SHT 1  /// SHT takes up 1140 bytes
-#define MINIBEE_ENABLE_PING 1 /// Ping takes up 440 bytes
+#define MINIBEE_ENABLE_TWI 0  /// TWI/I2C takes up 2064 bytes
+#define MINIBEE_ENABLE_SHT 0  /// SHT takes up 1140 bytes
+#define MINIBEE_ENABLE_PING 0 /// Ping takes up 440 bytes
 
 /// all in: 19138 bytes
 // specific TWI devices
+#if MINIBEE_ENABLE_TWI == 1
 #define MINIBEE_ENABLE_TWI_ADXL 1 /// 962 bytes - without: 18176
 #define MINIBEE_ENABLE_TWI_LISDL 1 /// 614 bytes - without: 18524
 #define MINIBEE_ENABLE_TWI_HMC 1 /// 1644 bytes - without: 17494 
 #define MINIBEE_ENABLE_TWI_BMP 1 /// 4182 bytes - without: 14956
 #define MINIBEE_ENABLE_TWI_TMP 1 /// 250 bytes - without: 18888
+#endif
 
 // #include <avr/interrupt.h>
 #include <avr/eeprom.h>
@@ -100,9 +104,9 @@ enum TWIDeviceConfig {
 //  	void USART_RX_vect(void) __attribute__ ((signal));
 // }
 
-class MiniBee {
+class MiniBeeAPI {
 	public:
-		MiniBee();	//constructor
+		MiniBeeAPI();	//constructor
 
 		void (*customMsgFunc)(char *);// = NULL;
 		void (*dataMsgFunc)(char *);// = NULL;
@@ -133,15 +137,26 @@ class MiniBee {
 		char * getData();
 		int dataSize();
 
+		XBee xbee;// = XBee();
+
+		void sendTx16( char type, uint8_t* data, uint8_t length );
+		void sendTx16( char type, char* data, uint8_t length );
+		void sendTx16PayLoad( uint8_t length );
+		void flashLed(int pin, int times, int wait);
+
+		uint8_t sendAtCommand( uint8_t* atCmd, uint8_t * response );
+// 		AtCommandRequest atRequest;// = AtCommandRequest(dmCmd);
+// 		AtCommandResponse atResponse;// = AtCommandResponse();
+
 	//AT CMD (communicate with XBee)
-		int atEnter(void);
-		int atExit(void);
-		int atSet(char *, uint8_t);
-		char* atGet(char *);
+// 		int atEnter(void);
+// 		int atExit(void);
+// 		int atSet(char *, uint8_t);
+// 		char* atGet(char *);
 
 	// serial communication with network
-		void send(char, char *, int);
-		void read(void);
+// 		void send(char, char *, int);
+// 		void read(void);
 
 	// set output pins
 		void setRunning( uint8_t ); 
@@ -279,7 +294,8 @@ class MiniBee {
 		bool loopback;
 		bool remoteConfig;
 
-		char *serial;
+// 		char *serial;
+		uint8_t serial[7];
 // 		char *dest_addr;
 // 		char *my_addr;
 
@@ -299,12 +315,12 @@ class MiniBee {
 		void setupMePin();
 		
 	//AT private commands
-		int atGetStatus(void);
-		void atSend(char *);
-		void atSend(char *, uint8_t);
+// 		int atGetStatus(void);
+// 		void atSend(char *);
+// 		void atSend(char *, uint8_t);
 
 	//msg with network
-		void slip(char);
+// 		void slip(char);
 // 		void slipSoft(char);
 		bool checkNodeMsg( uint8_t nid, uint8_t mid );
 		bool checkNotNodeMsg( uint8_t nid );

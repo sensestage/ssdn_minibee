@@ -6,9 +6,11 @@
 #include <BMP085.h>
 #include <HMC5843.h>
 
-#include <MiniBee.h>
+#include <XBee.h>
+#include <MiniBee_api.h>
 
-MiniBee Bee = MiniBee();
+
+MiniBeeAPI Bee = MiniBeeAPI();
 
 void setup() {
   Bee.begin(57600);
