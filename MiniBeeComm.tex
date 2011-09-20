@@ -165,4 +165,57 @@ enum TWIDeviceConfig {
 % 
 % Note: analog pins 10 bit or 8 bit results?
 
+\section{Using API mode (version 4)}
+
+\begin{enumerate}
+ \item Wake up XBee
+ \item Read SH and SL \textit{(currently only SL, as SH tends to be 00130020, and the 0x13 is not parsed right)}
+ \item Send SH and SL to coordinator (msgtype 's') \textit{(currently only SL)}
+ \item Coordinator sets ATMY of MiniBee with a remote-at command\\
+	Coordinator sends node ID (msgtype 'I') with an optional configuration ID. If so, the board will receive a new configuration.
+%  \item \textit{if new config} Change MY to given destination address.
+%  \item \textit{if new config} Send coordinator a message of having changed to destination address.
+ \item \textit{if new config} Node sends waiting message (msgtype 'w').
+ \item \textit{if new config} Wait for configuration message.
+ \item \textit{if new config} Write new config to EEPROM and confirm received configuration message.
+ \item Load config from EEPROM.
+ \item Node sends config summary (msgtype 'c').
+ \item Start sending data, or wait for receiving data (depending on config).
+\end{enumerate}
+
+\begin{table}
+ 
+\begin{center}
+\begin{tabular}{llll}
+description & type & data & sender\\
+\hline
+Data output & 'O' & node ID + msg ID + N values & server\\
+%PWM & 'P' & node ID + msg ID + 6 values & server\\
+%Digital out & 'D' & node ID + msg ID + 19 values & server\\
+Data & 'd' & node ID + msg ID + N values & node\\
+Active & 'a' & node ID + msg ID & node\\
+Pausing & 'p' & node ID + msg ID & node\\
+Loopback & 'L' & node ID + msg ID + onoff & server\\
+Running & 'R' & node ID + msg ID + onoff & server\\
+% Stepper motor & 'M' & node ID + msg ID + speed + direction + steps & server\\
+Custom message & 'E' & node ID + msg ID + (*data*) & server\\
+\hline
+Announce & 'A' &  & server \\
+Quit & 'Q' &  & server \\
+Serial number & 's' & node ID + msg ID + (Serial High (SH)) + Serial Low (SL) +& \\
+			&	  & + library version + board revision + capabilities & node\\
+ID assignment & 'I' & node ID + msgID + (SH) + SL + (*config ID*) & server \\
+Wait for config & 'w' & node ID + msg ID + config ID & node \\
+Configuration & 'C' & node ID  + msg ID + config ID + configuration bytes & server \\
+Confirm config & 'c' & node ID + msg ID + config ID + smpMsg + msgInt + & \\
+                           &        & + datasize + outsize + (*custom*) & node \\
+(*custom*) &  & customInputs + customDataSize + N x (custom pin, data size) & \\
+\hline
+% "full package" (Chronotopia) & 'a' & 6 * 6 + 3 values & server \\
+% "light" (PWM up to now)      & 'l' & node ID + 6 values & server
+\end{tabular}
+\end{center}
+\caption{Message protocol between host and MiniBee nodes in API mode. Character 13 needs to be escaped. General convention: server message in capital, node message small.}
+\end{table}
+
 \end{document}
