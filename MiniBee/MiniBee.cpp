@@ -1101,25 +1101,25 @@ void MiniBee::parseConfig(void){
 // 	}
 	
 	uint8_t confSize = 9;
-	char * configInfo = (char*)malloc( sizeof(char) * (19*2 + confSize) );
-	configInfo[0] = node_id;
-	configInfo[1] = config_id;
-	configInfo[2] = samplesPerMsg;
-	configInfo[3] = (uint8_t) (smpInterval/256);
-	configInfo[4] = (uint8_t) (smpInterval%256);
-	configInfo[5] = datasize;
-	configInfo[6] = datasizeout;
-	configInfo[7] = customInputs;
-	configInfo[8] = customDataSize;
+	char * configInfoN = (char*)malloc( sizeof(char) * (19*2 + confSize) );
+	configInfoN[0] = node_id;
+	configInfoN[1] = config_id;
+	configInfoN[2] = samplesPerMsg;
+	configInfoN[3] = (uint8_t) (smpInterval/256);
+	configInfoN[4] = (uint8_t) (smpInterval%256);
+	configInfoN[5] = datasize;
+	configInfoN[6] = datasizeout;
+	configInfoN[7] = customInputs;
+	configInfoN[8] = customDataSize;
 	for ( i=0; i<NRPINS; i++){
 	  if ( custom_pin[i] ){
-	    configInfo[confSize] = i;
-	    configInfo[confSize+1] = custom_size[i];
+	    configInfoN[confSize] = i;
+	    configInfoN[confSize+1] = custom_size[i];
 	    confSize += 2;
 	  }
 	}
-	send( N_CONF, configInfo, confSize );
-	free( configInfo );
+	send( N_CONF, configInfoN, confSize );
+	free( configInfoN );
 
 	outMessage = (char*)malloc( sizeof(char) * (datasize + 2 ) );
 	data = outMessage + 2*sizeof(char); // not sure if this is correct... test!!
