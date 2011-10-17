@@ -37,7 +37,7 @@ class MiniBee_API{
 //     char *outMessage;
     uint8_t outMessage[2];
 
-    char *data;
+    uint8_t *data;
     int datacount;
     int datasize;
     

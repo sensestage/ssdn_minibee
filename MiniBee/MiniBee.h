@@ -19,6 +19,11 @@
 #define MINIBEE_ENABLE_TWI_BMP 1 /// 4182 bytes - without: 14956
 #define MINIBEE_ENABLE_TWI_TMP 1 /// 250 bytes - without: 18888
 
+#define MINIBEE_ENABLE_TWI_LISDL 0 /// 614 bytes - without: 18524
+#define MINIBEE_ENABLE_TWI_HMC 0 /// 1644 bytes - without: 17494 
+#define MINIBEE_ENABLE_TWI_BMP 0 /// 4182 bytes - without: 14956
+#define MINIBEE_ENABLE_TWI_TMP 0 /// 250 bytes - without: 18888
+
 // #include <avr/interrupt.h>
 #include <avr/eeprom.h>
 #include <inttypes.h>
@@ -110,9 +115,10 @@ class MiniBee {
 // 		void ParseCustom( char * msg ){ Serial.println( msg ); };
 		
 		void begin(long); //init function
-		void doLoopStep(void); // loop function
+		void doLoopStep(bool usedelay ); // loop function
 		
 		void setRemoteConfig( bool onoff );
+		void setRemoteConfig( uint8_t level );
 
 		void setCustomPins( uint8_t * ids, uint8_t * sizes, uint8_t n ); // sets pins to custom configuration
 		void setCustomPin( uint8_t id, uint8_t size ); // sets a pin to custom configuration
@@ -277,7 +283,7 @@ class MiniBee {
 		uint8_t status;
 		
 		bool loopback;
-		bool remoteConfig;
+		uint8_t remoteConfig;
 
 		char *serial;
 // 		char *dest_addr;

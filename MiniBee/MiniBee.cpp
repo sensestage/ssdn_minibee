@@ -71,7 +71,7 @@ MiniBee::MiniBee() {
 	customDataSize = 0;
 	
 	loopback = false;
-	remoteConfig = true;
+	remoteConfig = 2;
 	
 // 	useSoftSerial = false;
 
@@ -165,7 +165,7 @@ void MiniBee::begin(long baud_rate) {
 //   softSerial.begin(baud_rate);
 // }
 
-void MiniBee::doLoopStep(void){
+void MiniBee::doLoopStep( bool usedelay = true ){
   int bytestoread;
   // do something based on current status:
   switch( status ){
@@ -177,11 +177,15 @@ void MiniBee::doLoopStep(void){
 	      curSample = 0;
 	      datacount = 0;
 	  }
-	  delay( smpInterval );
+	  if ( usedelay ){
+	    delay( smpInterval );
+	  }
 	  break;
       case STARTING:
 //          send( N_INFO, "starting", 8 );
-	  delay( 100 );
+	  if ( usedelay ){
+	    delay( 100 );
+	  }
 	  break;
       case WAITFORCONFIG:
 //          send( N_INFO, "waitforconfig" );
@@ -190,7 +194,9 @@ void MiniBee::doLoopStep(void){
 	}
 	actcount++;
 	actcount = actcount%100;
-	delay( 100 );
+	if ( usedelay ){
+	  delay( 100 );
+	}
 	break;
       case WAITFORHOST:
 //       send( N_INFO, "waitforhost" );
@@ -199,7 +205,9 @@ void MiniBee::doLoopStep(void){
 	}
 	actcount++;
 	actcount = actcount%100;
-	delay( 100 );
+	if ( usedelay ){
+	  delay( 100 );
+	}
 	break;
       case ACTING:
 	if ( actcount == 0 ){ // send an I'm active message every 100 smpIntervals
@@ -207,7 +215,9 @@ void MiniBee::doLoopStep(void){
 	}
 	actcount++;
 	actcount = actcount%100;
-	delay( smpInterval );
+	if ( usedelay ){
+	  delay( smpInterval );
+	}
 	break;
       case PAUSING:
 	if ( actcount == 0 ){ // send an I'm active message every 100 smpIntervals
@@ -215,7 +225,9 @@ void MiniBee::doLoopStep(void){
 	}
 	actcount++;
 	actcount = actcount%100;
-	delay( 500 );
+	if ( usedelay ){
+	  delay( 500 );
+	}
 	break;
     }
   
@@ -501,21 +513,21 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 
 	switch(type) {
 		case S_ANN:
-			if ( remoteConfig ){
+			if ( remoteConfig > 0 ){
 				sendSerialNumber();
 				status = WAITFORHOST;
   // 			send( N_INFO, "waitforhost", 11 );
 			}
 			break;
 		case S_QUIT:
-			if ( remoteConfig ){
+			if ( remoteConfig > 0 ){
 				status = WAITFORHOST;
 			//do something to stop doing anything
 			}
 // 			send( N_INFO, "waitforhost", 11 );
 			break;
 		case S_ID:
-			if ( remoteConfig ){
+			if ( remoteConfig > 0 ){
 			    if ( checkIDMsg( msg[0] ) ){
 				len = strlen(serial);
 				ser = (char *)malloc(sizeof(char)* (len + 1 ) );
@@ -524,7 +536,8 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 				ser[len] = '\0';
 				if(strcmp(ser, serial) == 0){
 				    node_id = msg[len+1];	//writeConfig(msg);
-				    if ( size == (len+3) ){
+				    if ( remoteConfig > 1 ){
+				      if ( size == (len+3) ){
 					config_id = msg[len+2];
 					status = WAITFORCONFIG;
 // 					char configInfo[2];
@@ -532,10 +545,11 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 					configInfo[1] = config_id;
 					send( N_WAIT, configInfo, 2 );
 			// 			send( N_INFO, "waitforconfig", 13 );
-				    } else if ( size == (len+2) ) {
+				      } else if ( size == (len+2) ) {
 					readConfig();
 					status = SENSING;
 			// 				send( N_INFO, "sensing", 7 );
+				      }
 				    }
 // 		    		} else {
 // // 		    		    send( N_INFO, "wrong serial number", 19 );
@@ -561,7 +575,7 @@ void MiniBee::routeMsg(char type, char *msg, uint8_t size) {
 		case S_CONFIG:
 // 		  send( N_INFO, (char*) size, 1 );
 //  		  send( N_INFO, msg, size  );
-			if ( remoteConfig ){
+			if ( remoteConfig > 1 ){
 			// check if right config_id:
 			    if ( checkConfMsg( msg[0] ) ){
 				if ( (msg[1] == node_id) && (msg[2] == config_id) ){
@@ -654,7 +668,15 @@ void MiniBee::setADXL_range( char newrange ){
 }
 
 void MiniBee::setRemoteConfig( bool onoff ){
-    remoteConfig = onoff;
+  if ( onoff ){
+    remoteConfig = 2;
+  } else {
+    remoteConfig = 0;
+  }
+}
+
+void MiniBee::setRemoteConfig( uint8_t level ){
+    remoteConfig = level;
 }
 
 void MiniBee::setRunning( uint8_t onoff ){
