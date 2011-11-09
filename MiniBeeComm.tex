@@ -169,10 +169,10 @@ enum TWIDeviceConfig {
 
 \begin{enumerate}
  \item Wake up XBee
- \item Read SH and SL \textit{(currently only SL, as SH tends to be 00130020, and the 0x13 is not parsed right)}
- \item Send SH and SL to coordinator (msgtype 's') \textit{(currently only SL)}
+ \item Read SH and SL
+ \item Send SH and SL to coordinator (msgtype 's')
  \item Coordinator sets ATMY of MiniBee with a remote-at command\\
-	Coordinator sends node ID (msgtype 'I') with an optional configuration ID. If so, the board will receive a new configuration.
+	Coordinator sends Serial, node ID (msgtype 'I') with an optional configuration ID. If so, the board will receive a new configuration.
 %  \item \textit{if new config} Change MY to given destination address.
 %  \item \textit{if new config} Send coordinator a message of having changed to destination address.
  \item \textit{if new config} Node sends waiting message (msgtype 'w').
@@ -192,7 +192,10 @@ description & type & data & sender\\
 Data output & 'O' & msg ID + N values & server\\
 %PWM & 'P' & node ID + msg ID + 6 values & server\\
 %Digital out & 'D' & node ID + msg ID + 19 values & server\\
-Data & 'd' & msg ID + N values & node\\
+Data & 'd' & msg ID + digital values + N other values & node\\
+ & & digital values encoded in 0 - 3 bytes & \\
+ & & analog values each 1 or 2 bytes & \\
+ & & other values each 1 or more bytes & \\  
 Active & 'a' & msg ID & node\\
 Pausing & 'p' & msg ID & node\\
 Loopback & 'L' & msg ID + onoff & server\\
@@ -204,8 +207,8 @@ Announce & 'A' &  & server \\
 Quit & 'Q' &  & server \\
 Serial number & 's' & msg ID + (Serial High (SH)) + Serial Low (SL) +& \\
 			&	  & + library version + board revision + capabilities & node\\
-ID assignment & 'I' & msgID + (SH) + SL + (*config ID*) & server \\
-Wait for config & 'w' & msg ID + config ID & node \\
+ID assignment & 'I' & msgID + (SH) + SL + nodeID + (*config ID*) & server \\
+Wait for config & 'w' & msg ID + nodeID + config ID & node \\
 Configuration & 'C' & msg ID + config ID + configuration bytes & server \\
 Confirm config & 'c' & msg ID + config ID + smpMsg + msgInt + & \\
                            &        & + datasize + outsize + (*custom*) & node \\
