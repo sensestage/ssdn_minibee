@@ -165,7 +165,7 @@ void MiniBee::begin(long baud_rate) {
 //   softSerial.begin(baud_rate);
 // }
 
-void MiniBee::doLoopStep( bool usedelay = true ){
+void MiniBee::doLoopStep( bool usedelay ){
   int bytestoread;
   // do something based on current status:
   switch( status ){
@@ -693,11 +693,7 @@ void MiniBee::setRunning( uint8_t onoff ){
 }
 
 void MiniBee::setLoopback( uint8_t onoff ){
-    if ( onoff == 1 ){
-	loopback = true;
-    } else if ( onoff == 0 ){
-	loopback = false;
-    }
+  loopback = ( onoff == 1 );
 }
 
 void MiniBee::setOutputValues( char * msg, uint8_t offset ){
