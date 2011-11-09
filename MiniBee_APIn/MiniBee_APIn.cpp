@@ -55,11 +55,14 @@ TxStatusResponse txStatus = TxStatusResponse();
 
 XBeeResponse response = XBeeResponse();
 Rx16Response rx16 = Rx16Response();
-Rx64Response rx64 = Rx64Response();
+// Rx64Response rx64 = Rx64Response();
 
 
 
 MiniBee_API::MiniBee_API(){
+  serial = NULL;
+
+  loopback = false;
   status = STARTING;
   msg_type = S_NO_MSG;
   
@@ -69,7 +72,7 @@ MiniBee_API::MiniBee_API(){
 
   datacount = 0;
 
-  prev_id_msg = 0;
+  prev_id_msg = 255;
 }
 
 void MiniBee_API::setup( long baud_rate ) {
@@ -91,22 +94,25 @@ void MiniBee_API::setup( long baud_rate ) {
   status = WAITFORHOST;
 }
 
+// TODO: check:
+
 void MiniBee_API::loopStep(){
   switch( status ){
     case STARTING:
+      delay( 100 );
+      break;
+    case WAITFORHOST:
+      if ( actcount == 0 ){ // send the serial number every 10 seconds
+	sendXBeeSerial();
+      }
       delay( 100 );
       break;
     case WAITFORCONFIG:
       if ( actcount == 0 ){ // send the wait message every 10 seconds
 	msg_id_send++;
 	msg_id_send = msg_id_send%256;
-	sendTx16( N_WAIT, configInfo, 2 );
-      }
-      delay( 100 );
-      break;
-    case WAITFORHOST:
-      if ( actcount == 0 ){ // send the serial number every 10 seconds
-	sendXBeeSerial();
+	sendTx16( N_WAIT, &config_id, 1 );
+// 	sendTx16( N_WAIT, configInfo, 2 );
       }
       delay( 100 );
       break;
@@ -203,6 +209,8 @@ uint8_t MiniBee_API::readSensors( uint8_t db ){
     return db;
 }
 
+//end TODO: check/
+
 void MiniBee_API::sendData(void){
     msg_id_send++;
     msg_id_send = msg_id_send%256;
@@ -212,6 +220,7 @@ void MiniBee_API::sendData(void){
 // 	outMessage[i+2] = data[i];
 //     }
     sendTx16( N_DATA, outMessage, datacount );
+    datacount = 0;
 }
 
 void MiniBee_API::sendActive(void){
@@ -238,14 +247,14 @@ void MiniBee_API::sendPaused(void){
 
 void MiniBee_API::readXBeePacket(){
   uint8_t option = 0;
-//   uint8_t *data;
+  uint8_t *data;
   uint8_t datasize = 0;
   uint8_t recvMsgType;
   
   xbee.readPacket();
     
   if (xbee.getResponse().isAvailable()) {// got something
-    if (xbee.getResponse().getApiId() == RX_16_RESPONSE || xbee.getResponse().getApiId() == RX_64_RESPONSE) {
+//     if (xbee.getResponse().getApiId() == RX_16_RESPONSE || xbee.getResponse().getApiId() == RX_64_RESPONSE) {
       // got a rx packet
       if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
 	xbee.getResponse().getRx16Response(rx16);
@@ -253,12 +262,14 @@ void MiniBee_API::readXBeePacket(){
 	datasize = rx16.getDataLength();
         data = rx16.getData();
 	recvMsgType = rx16.getData(0);
+/*
       } else {
         xbee.getResponse().getRx64Response(rx64);
 	option = rx64.getOption();
 	datasize = rx64.getDataLength();
         data = rx64.getData();
 	recvMsgType = rx64.getData(0);
+*/
       }
       routeMsg( recvMsgType, data, datasize );
       // TODO check option, rssi bytes    
@@ -266,7 +277,7 @@ void MiniBee_API::readXBeePacket(){
     } else { // not something we were expecting
       flashLed(STATUS_LED, 1, 25);    
     }
-  }
+//   }
 //   sendTx16( N_INFO, data, datasize );
 }
 
@@ -279,17 +290,15 @@ bool MiniBee_API::checkIDMsg( uint8_t mid ){
 void MiniBee_API::routeMsg(uint8_t type, uint8_t *msg, uint8_t size) {
 
   // msg[0] = type
-  // msg[1] = node id
-  // msg[2] = msg id
-  // msg[3] = msg specific data
+  // msg[1] = msg id
+  // msg[2:] = msg specific data
   
-//   if ( loopback ){
-    msg_id_send++;
-    msg_id_send = msg_id_send%256;
-    sendTx16( 'x', msg, size );
+    if ( loopback ){
+      msg_id_send++;
+      msg_id_send = msg_id_send%256;
+      sendTx16( N_INFO, msg, size );
+    }
     
-    
-//   }
     switch(type) {
       case S_ANN:
 // 	if ( remoteConfig ){
@@ -303,54 +312,70 @@ void MiniBee_API::routeMsg(uint8_t type, uint8_t *msg, uint8_t size) {
 	  //do something to stop doing anything
 // 	}
 	break;
+      case S_LOOP:
+	if ( checkIDMsg( msg[1] ) ){
+	  setLoopback( msg[2] );
+	}
+	break;
       case S_ID:
 // 	if ( remoteConfig ){
-// 	  if ( checkIDMsg( msg[2] ) ){ 
+	  if ( checkIDMsg( msg[1] ) ){ 
 // 	    node_id = msg[1];
 	    bool serialCorrect = true;
 	    for ( uint8_t j=0; j<8; j++ ){
-		if ( serial[j] != msg[j+3] ){ // serial is msg[3:10]
+		if ( serial[j] != msg[j+2] ){ // serial is msg[2,3,4,5, 6,7,8,9]
 		  serialCorrect = false;
 		}
 	    }
-// 	    if ( serialCorrect ){
+	    if ( serialCorrect ){
 // 	      node_id = rx16.getData( 1 );
 // 	      config_id = rx16.getData( 2 );
 // 	      setID( msg[1] ); // node id is msg[1]
 // 	      if ( size == 8 ){
-// 		config_id = msg[11]; // config id is msg[8]
+		config_id = msg[10]; // config id is msg[8]
 		status = WAITFORCONFIG;
 //  		configInfo[0] = node_id;
-//  		configInfo[1] = config_id;
+//   		configInfo[1] = config_id;
 // 		configInfo[0] = rx16.getData( 1 );
 // 		configInfo[1] = rx16.getData( 11 );
 // 		configInfo[0] = rx16.getDataOffset();
 // 		configInfo[1] = rx16.getDataLength();
-		configInfo[0] = msg[0];
-		configInfo[1] = size;
+// 		configInfo[0] = config_id;
+// 		configInfo[1] = size;
 		
-		sendTx16( N_WAIT, configInfo, 2 );
+		sendTx16( N_WAIT, &config_id, 1 );
 // 		sendTx16( 'x', serial, 8 );
 // 	      } else if ( size < 8 ) { // no new config
 // 		readConfig();
 //   		status = SENSING;
 // 	      }
-// 	    }
-// 	  }
+	    } else {
+	      sendXBeeSerial();
+	    }
+	  }
 	break;
     }
 // }
 }
 
+// void MiniBee_API::setCustomParser( void (*customFunc)(uint8_t *, int ) ){
+//     customMsgFunc = customFunc;
+// }
+
+void MiniBee_API::setLoopback( uint8_t onoff ){
+  loopback = ( onoff == 1 );
+}
+
+// TODO: this should set the ATMY!
 void MiniBee_API::setID( uint8_t id ){
   node_id = id;
 //   configInfo[0] = node_id;
 //   configInfo[1] = config_id;
 }
 
-uint8_t MiniBee_API::getId(void) { 
-  return node_id;
-}
+// uint8_t MiniBee_API::getId(void) { 
+//   return node_id;
+// }
 
 
 void MiniBee_API::readXBeeSerial() {
@@ -365,8 +390,12 @@ void MiniBee_API::readXBeeSerial() {
     // set command to SL
   atRequest.setCommand(slCmd);  
   response2 = sendAtCommand();
+  
+  if ( serial != NULL ){
+    free( serial );
+  }
 
-  serial = (uint8_t *)malloc( 8 * sizeof( uint8_t ) );
+  serial = (uint8_t *)malloc( 11 * sizeof( uint8_t ) );
 //   sizeof( response1 ) + sizeof(response2) );
 //   serial = (uint8_t *)malloc( sizeof(response2) );
   
@@ -422,19 +451,23 @@ uint8_t* MiniBee_API::sendAtCommand() {
 }
 
 void MiniBee_API::sendXBeeSerial(){
-  sendTx16( N_SER, serial, 8 );  
+  serial[8] = MINIBEE_LIBVERSION;
+  serial[9] = MINIBEE_REVISION;
+/// 1 byte with data of capabilities that may be commented out in the firmware lib...
+  serial[10] = MINIBEE_ENABLE_PING*4 + MINIBEE_ENABLE_SHT*2 + MINIBEE_ENABLE_TWI;
+  sendTx16( N_SER, serial, 11 );
 }
 
 
 void MiniBee_API::sendTx16( char type, uint8_t* data, uint8_t length ){
   payload[0] = (uint8_t) type;
-  payload[1] = node_id;
-  payload[2] = msg_id_send;
+//   payload[1] = node_id;
+  payload[1] = msg_id_send;
   for ( uint8_t i=0; i<length; i++ ){
-    payload[i+3] = data[i];
+    payload[i+2] = data[i];
   }
   
-  txs16.setPayloadLength( length + 3 );
+  txs16.setPayloadLength( length + 2 );
 //   txs16.setPayload( payload );
   
   xbee.send(txs16);
