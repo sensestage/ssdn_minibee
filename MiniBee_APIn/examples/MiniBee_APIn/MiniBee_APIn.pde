@@ -33,7 +33,7 @@
 MiniBee_API mbee = MiniBee_API();
 
 void setup() {
-  mbee.setup( 57600 );
+  mbee.setup( 57600, 'D' );
 }
 
 // uint8_t actcount = 0;
