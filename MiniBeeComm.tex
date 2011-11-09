@@ -189,25 +189,25 @@ enum TWIDeviceConfig {
 \begin{tabular}{llll}
 description & type & data & sender\\
 \hline
-Data output & 'O' & node ID + msg ID + N values & server\\
+Data output & 'O' & msg ID + N values & server\\
 %PWM & 'P' & node ID + msg ID + 6 values & server\\
 %Digital out & 'D' & node ID + msg ID + 19 values & server\\
-Data & 'd' & node ID + msg ID + N values & node\\
-Active & 'a' & node ID + msg ID & node\\
-Pausing & 'p' & node ID + msg ID & node\\
-Loopback & 'L' & node ID + msg ID + onoff & server\\
-Running & 'R' & node ID + msg ID + onoff & server\\
+Data & 'd' & msg ID + N values & node\\
+Active & 'a' & msg ID & node\\
+Pausing & 'p' & msg ID & node\\
+Loopback & 'L' & msg ID + onoff & server\\
+Running & 'R' & msg ID + onoff & server\\
 % Stepper motor & 'M' & node ID + msg ID + speed + direction + steps & server\\
-Custom message & 'E' & node ID + msg ID + (*data*) & server\\
+Custom message & 'E' & msg ID + (*data*) & server\\
 \hline
 Announce & 'A' &  & server \\
 Quit & 'Q' &  & server \\
-Serial number & 's' & node ID + msg ID + (Serial High (SH)) + Serial Low (SL) +& \\
+Serial number & 's' & msg ID + (Serial High (SH)) + Serial Low (SL) +& \\
 			&	  & + library version + board revision + capabilities & node\\
-ID assignment & 'I' & node ID + msgID + (SH) + SL + (*config ID*) & server \\
-Wait for config & 'w' & node ID + msg ID + config ID & node \\
-Configuration & 'C' & node ID  + msg ID + config ID + configuration bytes & server \\
-Confirm config & 'c' & node ID + msg ID + config ID + smpMsg + msgInt + & \\
+ID assignment & 'I' & msgID + (SH) + SL + (*config ID*) & server \\
+Wait for config & 'w' & msg ID + config ID & node \\
+Configuration & 'C' & msg ID + config ID + configuration bytes & server \\
+Confirm config & 'c' & msg ID + config ID + smpMsg + msgInt + & \\
                            &        & + datasize + outsize + (*custom*) & node \\
 (*custom*) &  & customInputs + customDataSize + N x (custom pin, data size) & \\
 \hline
