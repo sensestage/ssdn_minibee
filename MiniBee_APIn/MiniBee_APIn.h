@@ -141,6 +141,8 @@ class MiniBee_API{
 
 
   private:
+    void setMeLed( uint8_t );
+    uint8_t me_status;
     
     	// collecting sensor data:
     void dataFromInt( unsigned int output, int offset );

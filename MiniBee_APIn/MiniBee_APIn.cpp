@@ -57,7 +57,7 @@ TxStatusResponse txStatus = TxStatusResponse();
 
 XBeeResponse response = XBeeResponse();
 Rx16Response rx16 = Rx16Response();
-// Rx64Response rx64 = Rx64Response();
+Rx64Response rx64 = Rx64Response();
 
 
 uint8_t MiniBee_API::pwm_pins[] = { 3,5,6, 9,10,11 };
@@ -65,6 +65,7 @@ uint8_t MiniBee_API::pwm_pins[] = { 3,5,6, 9,10,11 };
 MiniBee_API::MiniBee_API(){
   serial = NULL;
   outData = NULL;
+  me_status = 0;
 
   loopback = false;
   status = STARTING;
@@ -283,7 +284,7 @@ void MiniBee_API::readXBeePacket(){
   xbee.readPacket();
     
   if (xbee.getResponse().isAvailable()) {// got something
-//     if (xbee.getResponse().getApiId() == RX_16_RESPONSE || xbee.getResponse().getApiId() == RX_64_RESPONSE) {
+    if (xbee.getResponse().getApiId() == RX_16_RESPONSE || xbee.getResponse().getApiId() == RX_64_RESPONSE) {
       // got a rx packet
       if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
 	xbee.getResponse().getRx16Response(rx16);
@@ -291,22 +292,20 @@ void MiniBee_API::readXBeePacket(){
 	datasize = rx16.getDataLength();
         data = rx16.getData();
 	recvMsgType = rx16.getData(0);
-/*
       } else {
         xbee.getResponse().getRx64Response(rx64);
 	option = rx64.getOption();
 	datasize = rx64.getDataLength();
         data = rx64.getData();
 	recvMsgType = rx64.getData(0);
-*/
       }
       routeMsg( recvMsgType, data, datasize );
       // TODO check option, rssi bytes    
-      flashLed(STATUS_LED, 1, 10);
+//       flashLed(STATUS_LED, 1, 10);
     } else { // not something we were expecting
-      flashLed(STATUS_LED, 1, 25);    
+      flashLed(STATUS_LED, 1, 10);    
     }
-//   }
+  }
 //   sendTx16( N_INFO, data, datasize );
 }
 
@@ -361,24 +360,12 @@ void MiniBee_API::routeMsg(uint8_t type, uint8_t *msg, uint8_t size) {
 		}
 	    }
 	    if ( serialCorrect ){
-// 	      node_id = rx16.getData( 1 );
-// 	      config_id = rx16.getData( 2 );
-// 	      setID( msg[1] ); // node id is msg[1]
-// 	      if ( size == 8 ){
-		node_id = msg[10];
-		config_id = msg[11]; // config id is msg[8]
-		status = WAITFORCONFIG;
-  		configInfo[0] = node_id;
-   		configInfo[1] = config_id;
-// 		configInfo[0] = rx16.getData( 1 );
-// 		configInfo[1] = rx16.getData( 11 );
-// 		configInfo[0] = rx16.getDataOffset();
-// 		configInfo[1] = rx16.getDataLength();
-// 		configInfo[0] = config_id;
-// 		configInfo[1] = size;
-		sendTx16( N_WAIT, configInfo, 2 );
-// 		sendTx16( N_WAIT, &config_id, 1 );
-// 		sendTx16( 'x', serial, 8 );
+	      node_id = msg[10];
+	      config_id = msg[11]; // config id is msg[8]
+	      status = WAITFORCONFIG;
+	      configInfo[0] = node_id;
+	      configInfo[1] = config_id;
+	      sendTx16( N_WAIT, configInfo, 2 );
 // 	      } else if ( size < 8 ) { // no new config
 // 		readConfig();
 //   		status = SENSING;
@@ -403,13 +390,22 @@ void MiniBee_API::routeMsg(uint8_t type, uint8_t *msg, uint8_t size) {
 		actcount = 0;
 		status = ACTING;
 	      }
-      //      send( N_INFO, "sensing", 7 );
 	    }
 	  }
 	}
 	break;
+      case S_ME:
+	if ( checkIDMsg( msg[1] ) ){
+	  setMeLed( msg[2] );
+	}
+	break;
     }
 // }
+}
+
+void MiniBee_API::setMeLed( uint8_t onoff ){
+  me_status = onoff;
+  digitalWrite( STATUS_LED, onoff );
 }
 
 void MiniBee_API::readConfigMsg(uint8_t *msg, uint8_t size){
@@ -776,22 +772,22 @@ uint8_t* MiniBee_API::sendAtCommand() {
           for (int i = 0; i < atResponse.getValueLength(); i++) {
             response[i] = atResponse.getValue()[i];
           }
-	  flashLed(STATUS_LED, 10, 100);
+// 	  flashLed(STATUS_LED, 10, 100);
         }
       } else { // error 
-            flashLed(STATUS_LED, 3, 500);
+            flashLed(STATUS_LED, 3, 50);
 //         atResponse.getStatus();
       }
     } else { // not an AT response
-      flashLed(STATUS_LED, 4, 500);
+      flashLed(STATUS_LED, 4, 50);
 //       xbee.getResponse().getApiId();
     }   
   } else { // time out   // at command failed, there may be an error code returned
     if (xbee.getResponse().isError()) {
-      flashLed(STATUS_LED, 5, 700);
+      flashLed(STATUS_LED, 5, 70);
 //       xbee.getResponse().getErrorCode();
     } else { // no response at all
-      flashLed(STATUS_LED, 5, 1000);
+      flashLed(STATUS_LED, 5, 100);
     }
   }
   return response;
@@ -830,15 +826,15 @@ void MiniBee_API::sendTx16( char type, uint8_t* data, uint8_t length ){
 	  // get the delivery status, the fifth byte
 	  if (txStatus.getStatus() == SUCCESS) {
 		// success.  time to celebrate
-		flashLed(STATUS_LED, 5, 50);
+// 		flashLed(STATUS_LED, 5, 50);
 	  } else {
 		// the remote XBee did not receive our packet. is it powered on?
-		flashLed(STATUS_LED, 3, 500);
+		flashLed(STATUS_LED, 3, 50);
 	  }
 	}      
     } else {
       // local XBee did not provide a timely TX Status Response -- should not happen
-      flashLed(STATUS_LED, 2, 50);
+      flashLed(STATUS_LED, 3, 50);
     }
 }
 
@@ -847,11 +843,9 @@ void MiniBee_API::flashLed(int pin, int times, int wait) {
       digitalWrite(pin, HIGH);
       delay(wait);
       digitalWrite(pin, LOW);
-      
-      if (i + 1 < times) {
-        delay(wait);
-      }
+      delay(wait);
     }
+    digitalWrite( pin, me_status );
 }
 
 
