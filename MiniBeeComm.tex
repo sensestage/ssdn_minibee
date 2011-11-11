@@ -54,7 +54,7 @@ Announce & 'A' &  & server \\
 Quit & 'Q' &  & server \\
 Serial number & 's' & Serial High (SH) + Serial Low (SL) +& \\
 			&	  & + library version + board revision + capabilities & node\\
-ID assignment & 'I' & msgID + SH + SL + node ID + (*config ID*) & server \\
+ID assignment & 'I' & msg ID + SH + SL + node ID + (*config ID*) & server \\
 Wait for config & 'w' & node ID + config ID & node \\
 Configuration & 'C' & msg ID + node ID + config ID + configuration bytes & server \\
 Confirm config & 'c' & node ID + config ID + smpMsg + msgInt + & \\
@@ -137,7 +137,8 @@ enum TWIDeviceConfig {
   TWI_ADXL345=10,
   TWI_LIS302DL=11,
   TWI_BMP085=20,
-  TWI_TMP102=30
+  TWI_TMP102=30,
+  TWI_HMC58X3=40
 }
 \end{verbatim}
 
@@ -176,10 +177,12 @@ enum TWIDeviceConfig {
 	Coordinator sends Serial, node ID (msgtype 'I') with an optional configuration ID. If so, the board will receive a new configuration.
 %  \item \textit{if new config} Change MY to given destination address.
 %  \item \textit{if new config} Send coordinator a message of having changed to destination address.
- \item \textit{if new config} Node sends waiting message (msgtype 'w').
- \item \textit{if new config} Wait for configuration message.
- \item \textit{if new config} Write new config to EEPROM and confirm received configuration message.
- \item Load config from EEPROM.
+ \item Node sends waiting message (msgtype 'w').
+ \item Wait for configuration message.
+ \item Server sends configuration message (msgtype 'C').
+ \item Node parses configuration message.
+%  \item \textit{if new config} Write new config to EEPROM and confirm received configuration message.
+%  \item Load config from EEPROM.
  \item Node sends config summary (msgtype 'c').
  \item Start sending data, or wait for receiving data (depending on config).
 \end{enumerate}
@@ -220,7 +223,7 @@ Me status pin & 'M' & msg ID + status  & server \\
 % "light" (PWM up to now)      & 'l' & node ID + 6 values & server
 \end{tabular}
 \end{center}
-\caption{Message protocol between host and MiniBee nodes in API mode. Character 13 needs to be escaped. General convention: server message in capital, node message small.}
+\caption{Message protocol between host and MiniBee nodes in API mode. General convention: server message in capital, node message small.}
 \end{table}
 
 \end{document}
