@@ -60,6 +60,7 @@ Configuration & 'C' & msg ID + node ID + config ID + configuration bytes & serve
 Confirm config & 'c' & node ID + config ID + smpMsg + msgInt + & \\
                            &        & + datasize + outsize + (*custom*) & node \\
 (*custom*) &  & customInputs + customDataSize + N x (custom pin, data size) & \\
+Me status pin & 'M' & msg ID + Serial High (SH) + Serial Low (SL) + status  & server \\
 \hline
 % "full package" (Chronotopia) & 'a' & 6 * 6 + 3 values & server \\
 % "light" (PWM up to now)      & 'l' & node ID + 6 values & server
@@ -213,6 +214,7 @@ Configuration & 'C' & msg ID + config ID + configuration bytes & server \\
 Confirm config & 'c' & msg ID + config ID + smpMsg + msgInt + & \\
                            &        & + datasize + outsize + (*custom*) & node \\
 (*custom*) &  & customInputs + customDataSize + N x (custom pin, data size) & \\
+Me status pin & 'M' & msg ID + status  & server \\
 \hline
 % "full package" (Chronotopia) & 'a' & 6 * 6 + 3 values & server \\
 % "light" (PWM up to now)      & 'l' & node ID + 6 values & server
