@@ -465,7 +465,7 @@ void MiniBee_API::readConfigMsg(uint8_t *msg, uint8_t size){
   // msg[0] = 'C'
   // msg[1] = msg id
   // msg[2:] = configuration bytes
-	config = (uint8_t*)malloc(sizeof(uint8_t) * size);
+	config = (uint8_t*)malloc(sizeof(uint8_t) * (size-2));
 	for(uint8_t i = 0;i < (size-2);i++){
 	  config[i] = msg[i+2];
 	}
@@ -867,7 +867,7 @@ void MiniBee_API::sendTx16( char type, uint8_t* data, uint8_t length ){
 //   txs16.setPayload( payload );
   
   xbee.send(txs16);
-  flashLed(STATUS_LED, 1, 100);
+//   flashLed(STATUS_LED, 1, 100);
 
   // after sending a tx request, we expect a status response
   // wait up to 5 seconds for the status response
