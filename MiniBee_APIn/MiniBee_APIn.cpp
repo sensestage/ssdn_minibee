@@ -187,7 +187,7 @@ uint8_t MiniBee_API::readSensors( uint8_t db ){
 	      outData[db] = newdigital;
 	      db++;
 	  }
-	  newdigital += digitalRead( i ) << ( bitj++ );
+	  newdigital += digitalRead( i + PINOFFSET ) << ( bitj++ );
 	}
     }
 
@@ -280,6 +280,7 @@ void MiniBee_API::readXBeePacket(){
   uint8_t *data;
   uint8_t datasize = 0;
   uint8_t recvMsgType;
+  uint16_t source;
   
   xbee.readPacket();
     
@@ -289,17 +290,19 @@ void MiniBee_API::readXBeePacket(){
       if (xbee.getResponse().getApiId() == RX_16_RESPONSE) {
 	xbee.getResponse().getRx16Response(rx16);
         option = rx16.getOption();
+	source = rx16.getRemoteAddress16();
 	datasize = rx16.getDataLength();
         data = rx16.getData();
 	recvMsgType = rx16.getData(0);
       } else {
         xbee.getResponse().getRx64Response(rx64);
 	option = rx64.getOption();
+	source = 0;
 	datasize = rx64.getDataLength();
         data = rx64.getData();
 	recvMsgType = rx64.getData(0);
       }
-      routeMsg( recvMsgType, data, datasize );
+      routeMsg( recvMsgType, data, datasize, source );
       // TODO check option, rssi bytes    
 //       flashLed(STATUS_LED, 1, 10);
     } else { // not something we were expecting
@@ -315,7 +318,7 @@ bool MiniBee_API::checkIDMsg( uint8_t mid ){
   return res;
 }
 
-void MiniBee_API::routeMsg(uint8_t type, uint8_t *msg, uint8_t size) {
+void MiniBee_API::routeMsg(uint8_t type, uint8_t *msg, uint8_t size, uint16_t source ) {
 
   // msg[0] = type
   // msg[1] = msg id
@@ -399,8 +402,58 @@ void MiniBee_API::routeMsg(uint8_t type, uint8_t *msg, uint8_t size) {
 	  setMeLed( msg[2] );
 	}
 	break;
+      case S_OUT:
+	if ( checkIDMsg( msg[1] ) ){
+	  setOutputValues( msg, 2 );
+	  setOutput();
+	}
+	break;
+      case S_CUSTOM:
+	if ( checkIDMsg( msg[1] ) ){
+	    this->customMsgFunc( msg, size, source );
+	}
+	break;
+      case N_DATA:
+	if ( checkNotNodeMsg( source ) ){
+	  this->dataMsgFunc( msg, size, source );
+	}
+	break;
     }
 // }
+}
+
+void MiniBee_API::setOutputValues( uint8_t * msg, uint8_t offset ){
+    uint8_t i = offset;
+    for ( uint8_t j=0; j < 6; j++ ){
+	if ( pwm_on[j] ){
+	    pwm_values[j] = msg[i];
+	    i++;
+	}
+    }
+    for ( uint8_t j=0; j < nrpins; j++ ){
+	if ( digital_out[j] ){
+	    digital_values[j] = msg[i];
+	    i++;
+	}
+    }
+}
+
+void MiniBee_API::setOutput(){
+  for( uint8_t i=0; i<6; i++){
+    if ( pwm_on[i] ){
+      analogWrite( pwm_pins[i], pwm_values[i] );
+    }
+  } 
+  for( uint8_t i=0; i<nrpins; i++){
+    if ( digital_out[i] ){
+      digitalWrite( i+PINOFFSET, digital_values[i] );
+    }
+  } 
+}
+
+bool MiniBee_API::checkNotNodeMsg( uint16_t nid ){
+	bool res = ( (nid != node_id) );
+	return res;
 }
 
 void MiniBee_API::setMeLed( uint8_t onoff ){
@@ -684,9 +737,9 @@ void MiniBee_API::parseConfig(void){
 }
 
 
-// void MiniBee_API::setCustomParser( void (*customFunc)(uint8_t *, int ) ){
-//     customMsgFunc = customFunc;
-// }
+void MiniBee_API::setCustomParser( void (*customFunc)(uint8_t *, uint8_t, uint16_t ) ){
+  customMsgFunc = customFunc;
+}
 
 void MiniBee_API::setLoopback( uint8_t onoff ){
   loopback = ( onoff == 1 );

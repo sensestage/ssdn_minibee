@@ -90,12 +90,19 @@ class MiniBee_API{
     uint8_t* sendAtCommand();
     void sendTx16( char type, uint8_t* data, uint8_t length );
     
-//     void setCustomParser( void (*customFunc)(uint8_t *, int ) );
+    void (*customMsgFunc)( uint8_t *, uint8_t, uint16_t );// = NULL;
+    void (*dataMsgFunc)( uint8_t *, uint8_t, uint16_t );// = NULL;
+
+    
+    void setCustomParser( void (*customFunc)(uint8_t *, uint8_t, uint16_t ) );
 
     void setRunning( uint8_t ); 
     void setLoopback( uint8_t ); 
     void setRemoteConfig( uint8_t ); 
 
+    void setOutput();
+    void setOutputValues( uint8_t * msg, uint8_t offset );
+    
     bool checkConfMsg( uint8_t mid );
 
     uint8_t *config; //array of pointers for all the config bytes
@@ -150,8 +157,9 @@ class MiniBee_API{
 
     uint8_t readSensors( uint8_t db );
     void readXBeePacket();
-    void routeMsg(uint8_t type, uint8_t *msg, uint8_t size);
-    bool checkIDMsg( uint8_t mid );
+    void routeMsg(uint8_t type, uint8_t *msg, uint8_t size, uint16_t source );
+    bool checkIDMsg( uint8_t );
+    bool checkNotNodeMsg( uint16_t );
     
     bool isAnalogPin( uint8_t );
     bool isIOPin( uint8_t );
@@ -169,7 +177,7 @@ class MiniBee_API{
     int datacount;
     int datasize;
     
-    uint8_t node_id;
+    uint8_t node_id; // TODO: should this be a uint16_t instead?
     uint8_t config_id;
     uint8_t configInfo[2];
     
