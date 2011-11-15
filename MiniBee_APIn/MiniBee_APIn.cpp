@@ -791,7 +791,7 @@ void MiniBee_API::readXBeeSerial() {
     free( serial );
   }
 
-  serial = (uint8_t *)malloc( 11 * sizeof( uint8_t ) );
+  serial = (uint8_t *)malloc( 12 * sizeof( uint8_t ) );
 //   sizeof( response1 ) + sizeof(response2) );
 //   serial = (uint8_t *)malloc( sizeof(response2) );
   
@@ -851,6 +851,7 @@ void MiniBee_API::sendXBeeSerial(){
   serial[9] = board_revision;
 /// 1 byte with data of capabilities that may be commented out in the firmware lib...
   serial[10] = MINIBEE_ENABLE_PING*4 + MINIBEE_ENABLE_SHT*2 + MINIBEE_ENABLE_TWI;
+  serial[11] = remoteConfig;
   sendTx16( N_SER, serial, 11 );
 }
 
