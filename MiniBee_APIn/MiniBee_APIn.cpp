@@ -1,3 +1,23 @@
+/**
+ * Copyright (c) 2011 Marije Baalman. All rights reserved
+ *
+ * This file is part of the MiniBee API library.
+ *
+ * MiniBee_API is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MiniBee_API is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MiniBee_API.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "WProgram.h"
 #include "MiniBee_APIn.h"
 
 #define XBEE_SLEEP_PIN 2
@@ -75,11 +95,54 @@ MiniBee_API::MiniBee_API(){
   node_id = 0;
   config_id = 0;
 
+  curSample = 0;
   datacount = 0;
+  
+  smpInterval = 50; // default value
+  msgInterval = 50;
+  samplesPerMsg = 1;
+
+  hasInput = false;
+  hasOutput = false;
+  hasCustom = false;
   
   remoteConfig = 2;	
 
   prev_id_msg = 255;
+  
+  customDataSize = 0;
+  customInputs = 0;
+
+  void (*customMsgFunc)(char *) = NULL;
+  void (*dataMsgFunc)(char *) = NULL;
+
+#if MINIBEE_ENABLE_SHT == 1
+  shtOn = false;
+#endif
+#if MINIBEE_ENABLE_TWI == 1
+  twiOn = false;
+
+  #if MINIBEE_ENABLE_TWI_ADXL == 1
+	accelADXL = NULL;
+#endif
+#if MINIBEE_ENABLE_TWI_LISDL == 1
+	accelLIS = NULL;
+#endif
+#if MINIBEE_ENABLE_TWI_BMP == 1
+	bmp085 = NULL;
+#endif
+#if MINIBEE_ENABLE_TWI_TMP == 1
+	temp102 = NULL;
+#endif
+#if MINIBEE_ENABLE_TWI_HMC == 1
+	hmc58x3 = NULL;
+#endif
+  
+#endif
+#if MINIBEE_ENABLE_PING == 1
+  pingOn = false;
+#endif
+
 }
 
 void MiniBee_API::setup( long baud_rate, char boardrev ) {
@@ -736,9 +799,65 @@ void MiniBee_API::parseConfig(void){
 // 	data = outMessage + 2*sizeof(char); // not sure if this is correct... test!!
 }
 
+void MiniBee_API::setCustomPins( uint8_t * ids, uint8_t * sizes, uint8_t n  ){
+    for ( uint8_t i=0; i<n; i++ ){
+	setCustomPin( ids[i], sizes[i] );
+    }
+}
 
-void MiniBee_API::setCustomParser( void (*customFunc)(uint8_t *, uint8_t, uint16_t ) ){
+void MiniBee_API::setCustomPin( uint8_t id, uint8_t size ){
+    if ( id >= PINOFFSET ){
+	custom_pin[ id-PINOFFSET ] = true;
+	custom_size[ id-PINOFFSET ] = size;
+    } // id's smaller than PINOFFSET allow for custom data without pin associated
+    customDataSize += size;
+    
+    hasCustom = true;
+    if ( size > 0 ){ hasInput = true; }
+}
+
+void MiniBee_API::setCustomInput( uint8_t noInputs, uint8_t size ){
+    customInputs += noInputs;
+    customDataSize += noInputs * size;
+
+    hasCustom = true;
+    if ( size > 0 ){ hasInput = true; }
+}
+
+
+void MiniBee_API::addCustomData( uint8_t * cdata, uint8_t n ){
+    if ( status == SENSING ){
+	for ( uint8_t i=0; i<n; i++){
+	    outData[datacount] = cdata[i];
+	    datacount++;  
+	}
+    }
+}
+
+void MiniBee_API::addCustomData( char * cdata, uint8_t n ){
+    if ( status == SENSING ){
+	for ( uint8_t i=0; i<n; i++){
+	    outData[datacount] = (uint8_t) cdata[i];
+	    datacount++;  
+	}
+    }
+}
+
+void MiniBee_API::addCustomData( int * cdata, uint8_t n ){
+    if ( status == SENSING ){
+	for ( uint8_t i=0; i<n; i++){
+	dataFromInt( cdata[i], datacount );
+	    datacount += 2;  
+	}
+    }
+}
+
+void MiniBee_API::setCustomCall( void (*customFunc)(uint8_t *, uint8_t, uint16_t ) ){
   customMsgFunc = customFunc;
+}
+
+void MiniBee_API::setDataCall( void (*dataFunc)(uint8_t *, uint8_t, uint16_t ) ){
+  dataMsgFunc = dataFunc;
 }
 
 void MiniBee_API::setLoopback( uint8_t onoff ){
@@ -761,6 +880,15 @@ void MiniBee_API::setRunning( uint8_t onoff ){
     }
     actcount = 0;
 }
+
+uint8_t * MiniBee_API::getOutData(){
+    return outData;
+}
+
+int MiniBee_API::dataSize(){
+    return datasize;
+}
+
 
 // TODO: this should set the ATMY!
 void MiniBee_API::setID( uint8_t id ){

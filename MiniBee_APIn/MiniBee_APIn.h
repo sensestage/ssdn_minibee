@@ -1,10 +1,30 @@
+/**
+ * Copyright (c) 2011 Marije Baalman. All rights reserved
+ *
+ * This file is part of the MiniBee API library.
+ *
+ * MiniBee_API is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MiniBee_API is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MiniBee_API.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef MiniBee_APIn_h
 #define MiniBee_APIn_h
 
+#include <WProgram.h>
 // #include <avr/interrupt.h>
 #include <avr/eeprom.h>
 #include <inttypes.h>
-#include <WProgram.h>
+
 // #include <EEPROM.h>
 // #include <Wire.h>
 
@@ -92,10 +112,22 @@ class MiniBee_API{
     
     void (*customMsgFunc)( uint8_t *, uint8_t, uint16_t );// = NULL;
     void (*dataMsgFunc)( uint8_t *, uint8_t, uint16_t );// = NULL;
-
     
-    void setCustomParser( void (*customFunc)(uint8_t *, uint8_t, uint16_t ) );
+    uint8_t * getOutData();
+    int dataSize();
+    
+    void setCustomCall( void (*customFunc)(uint8_t *, uint8_t, uint16_t ) );
+    void setDataCall( void (*dataFunc)(uint8_t *, uint8_t, uint16_t  ) );
+    
+    void setCustomPins( uint8_t * ids, uint8_t * sizes, uint8_t n ); // sets pins to custom configuration
+    void setCustomPin( uint8_t id, uint8_t size ); // sets a pin to custom configuration
+    void setCustomInput( uint8_t noInputs, uint8_t size );
 
+    void addCustomData( uint8_t * cdata, uint8_t n );
+    void addCustomData( char * cdata, uint8_t n );
+    void addCustomData( int * cdata, uint8_t n );
+    
+    
     void setRunning( uint8_t ); 
     void setLoopback( uint8_t ); 
     void setRemoteConfig( uint8_t ); 
@@ -156,11 +188,14 @@ class MiniBee_API{
     void dataFromLong24( unsigned long output, int offset );
 
     uint8_t readSensors( uint8_t db );
+    
+    // reading xbee data:
     void readXBeePacket();
     void routeMsg(uint8_t type, uint8_t *msg, uint8_t size, uint16_t source );
     bool checkIDMsg( uint8_t );
     bool checkNotNodeMsg( uint16_t );
     
+    // pin helper functions:
     bool isAnalogPin( uint8_t );
     bool isIOPin( uint8_t );
     
