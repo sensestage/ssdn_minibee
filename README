@@ -21,3 +21,5 @@ ADXL345 - accelerometer
 HMC58X3 - magnetometer
 BMP085 - barometric pressure / temperature
 TMP102 - temperature
+
+Find more information on http://docs.sensestage.eu
