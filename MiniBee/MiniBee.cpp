@@ -67,9 +67,10 @@ MiniBee::MiniBee() {
 	smpInterval = 50; // default value
 	msgInterval = 50;
 	samplesPerMsg = 1;
-	
+
 	customDataSize = 0;
-	
+	customInputs = 0;
+
 	loopback = false;
 	remoteConfig = 2;
 	
@@ -81,6 +82,7 @@ MiniBee::MiniBee() {
 	message = (char*)malloc(sizeof(char) * MAX_MESSAGE_SIZE);
 	
 	void (*customMsgFunc)(char *) = NULL;
+	void (*dataMsgFunc)(char *) = NULL;
 
 	hasInput = false;
 	hasOutput = false;
@@ -251,7 +253,7 @@ void MiniBee::setCustomPins( uint8_t * ids, uint8_t * sizes, uint8_t n  ){
 }
 
 void MiniBee::setCustomInput( uint8_t noInputs, uint8_t size ){
-    customInputs = noInputs;
+    customInputs += noInputs;
     customDataSize += noInputs * size;
 
     hasCustom = true;
