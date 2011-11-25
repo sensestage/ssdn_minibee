@@ -32,12 +32,13 @@
 
 
 // #define MINIBEE_REVISION 'D'
-#define MINIBEE_LIBVERSION 4
+#define MINIBEE_LIBVERSION 5
 
 /// all together: 3644 bytes
 #define MINIBEE_ENABLE_TWI 1  /// TWI/I2C takes up 2064 bytes
 #define MINIBEE_ENABLE_SHT 1  /// SHT takes up 1140 bytes
 #define MINIBEE_ENABLE_PING 1 /// Ping takes up 440 bytes
+// #define MINIBEE_ENABLE_OWI 1  /// One wire interface
 
 #define MINIBEE_ENABLE_TWI_ADXL 1 /// 962 bytes - without: 18176
 #define MINIBEE_ENABLE_TWI_LISDL 1 /// 614 bytes - without: 18524
@@ -70,6 +71,10 @@
 
 #endif
 
+// #if MINIBEE_ENABLE_OWI == 1
+//   #include <OneWire.h>
+// #endif
+
 enum MiniBeePinConfig { 
   NotUsed,
   DigitalIn, DigitalOut,
@@ -77,10 +82,17 @@ enum MiniBeePinConfig {
   SHTClock, SHTData, 
   TWIClock, TWIData,
   Ping,
+//   OneWire,
   Custom = 100,
   MeID = 150,
   UnConfigured = 200,
 };
+
+// enum OWIDeviceConfig { 
+//   OWI_DS18S20=10,
+//   OWI_DS18B20=11,
+//   OWI_DS18B22=12
+// };
 
 enum TWIDeviceConfig { 
   TWI_ADXL345=10,
