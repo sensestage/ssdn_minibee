@@ -18,7 +18,14 @@
  */
 
 /// Wire needs to be included if TWI is enabled
-// #include <Wire.h>
+#include <Wire.h>
+
+#include <LIS302DL.h>
+#include <ADXL345.h>
+#include <TMP102.h>
+#include <BMP085.h>
+#include <HMC5843.h>
+
 /// in the header file of the MiniBee you can disable some options to save
 /// space on the MiniBee. If you don't the board may not work as it runs
 /// out of RAM.
