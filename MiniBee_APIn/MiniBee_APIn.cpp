@@ -204,7 +204,7 @@ void MiniBee_API::loopStep( bool usedelay ){
       if ( usedelay ){ delay( smpInterval ); }
       break;
     case PAUSING:
-      if ( actcount == 0 ){ // send an I'm active message every 100 smpIntervals
+      if ( actcount == 0 ){ // send an I'm paused message every 100 smpIntervals
 	sendPaused();
       }
       if ( usedelay ){ delay( 500 ); }
@@ -368,8 +368,9 @@ void MiniBee_API::readXBeePacket(){
       routeMsg( recvMsgType, data, datasize, source );
       // TODO check option, rssi bytes    
 //       flashLed(STATUS_LED, 1, 10);
-    } else { // not something we were expecting
-      flashLed(STATUS_LED, 1, 10);    
+//     } else { // not something we were expecting
+//       flashLed(STATUS_LED, 1, 10);    
+//     }
     }
   }
 //   sendTx16( N_INFO, data, datasize );
