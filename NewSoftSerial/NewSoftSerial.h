@@ -87,6 +87,7 @@ public:
   void begin(long speed);
   void end();
   int read();
+  char readChar();
   uint8_t available(void);
   bool active() { return this == active_object; }
   bool overflow() { bool ret = _buffer_overflow; _buffer_overflow = false; return ret; }

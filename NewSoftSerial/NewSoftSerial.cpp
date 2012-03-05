@@ -484,6 +484,24 @@ int NewSoftSerial::read(void)
   return d;
 }
 
+char NewSoftSerial::readChar(void)
+{
+  char d;
+
+  // A newly activated object never has any rx data
+  if (activate())
+    return -1;
+
+  // Empty buffer?
+  if (_receive_buffer_head == _receive_buffer_tail)
+    return -1;
+
+  // Read from "head"
+  d = _receive_buffer[_receive_buffer_head]; // grab next byte
+  _receive_buffer_head = (_receive_buffer_head + 1) % _NewSS_MAX_RX_BUFF;
+  return d;
+}
+
 uint8_t NewSoftSerial::available(void)
 {
   // A newly activated object never has any rx data
