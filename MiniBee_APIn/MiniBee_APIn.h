@@ -120,7 +120,7 @@ class MiniBee_API{
     void sendXBeeSerial();
     
     uint8_t* sendAtCommand();
-    void sendTx16( char type, uint8_t* data, uint8_t length );
+    boolean sendTx16( char type, uint8_t* data, uint8_t length );
     
     void (*customMsgFunc)( uint8_t *, uint8_t, uint16_t );// = NULL;
     void (*dataMsgFunc)( uint8_t *, uint8_t, uint16_t );// = NULL;
