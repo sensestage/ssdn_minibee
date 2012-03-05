@@ -610,6 +610,7 @@ void MiniBee_API::parseConfig(void){
   config_id = config[0];
   msgInterval = config[1]*256 + config[2];
   samplesPerMsg = config[3];
+  smpInterval = msgInterval / samplesPerMsg;
 
   if ( outData != NULL ){
     free(outData);
@@ -761,9 +762,6 @@ void MiniBee_API::parseConfig(void){
 	
   datacount = 0;
   datasize += customDataSize;
-  datasize = datasize * samplesPerMsg;
-
-  smpInterval = msgInterval / samplesPerMsg;
 
 #if MINIBEE_ENABLE_TWI == 1
   if ( twiOn ){
@@ -784,8 +782,8 @@ void MiniBee_API::parseConfig(void){
   configInfoN[0] = node_id;
   configInfoN[1] = config_id;
   configInfoN[2] = samplesPerMsg;
-  configInfoN[3] = (uint8_t) (smpInterval/256);
-  configInfoN[4] = (uint8_t) (smpInterval%256);
+  configInfoN[3] = (uint8_t) (msgInterval/256);
+  configInfoN[4] = (uint8_t) (msgInterval%256);
   configInfoN[5] = datasize;
   configInfoN[6] = datasizeout;
   configInfoN[7] = customInputs;
@@ -799,6 +797,8 @@ void MiniBee_API::parseConfig(void){
   }
   sendTx16( N_CONF, configInfoN, confSize );
   free( configInfoN );
+
+  datasize = datasize * samplesPerMsg;
 
   outData = (uint8_t*)malloc(sizeof(uint8_t) * datasize);
 
@@ -995,12 +995,13 @@ boolean MiniBee_API::sendTx16( char type, uint8_t* data, uint8_t length ){
   payload[0] = (uint8_t) type;
 //   payload[1] = node_id;
   payload[1] = msg_id_send;
+
+  txs16.setPayloadLength( length + 2 );
+
   for ( uint8_t i=0; i<length; i++ ){
     payload[i+2] = data[i];
-  }
-  
-  txs16.setPayloadLength( length + 2 );
-//   txs16.setPayload( payload );
+  }  
+  txs16.setPayload( payload );
   
   xbee.send(txs16);
 //   flashLed(STATUS_LED, 1, 100);
