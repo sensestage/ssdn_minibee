@@ -22,7 +22,7 @@
 #ifndef MiniBee_h
 #define MiniBee_h
 
-#define MINIBEE_REVISION 'D'
+#define MINIBEE_REVISION 'A'
 #define MINIBEE_LIBVERSION 3
 
 /// all together: 3644 bytes
@@ -131,7 +131,7 @@ class MiniBee {
 		void begin(long); //init function
 		void doLoopStep(bool usedelay = true ); // loop function
 		
-		void setRemoteConfig( bool onoff );
+// 		void setRemoteConfig( bool onoff );
 		void setRemoteConfig( uint8_t level );
 
 		void setCustomPins( uint8_t * ids, uint8_t * sizes, uint8_t n ); // sets pins to custom configuration

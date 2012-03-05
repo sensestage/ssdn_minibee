@@ -39,11 +39,13 @@ uint8_t MiniBee::pwm_pins[] = { 3,5,6, 9,10,11 };
 //		#define ANAOFFSET 9
 	uint8_t MiniBee::anapin_ids[] = {14,15,16,17 ,20,21 }; // ids of I/O pins	
 	uint8_t MiniBee::anapin_read_ids[] = {0,1,2,3, 6,7 }; // ids of I/O pins	
+	#define ANAPINS 6
 #endif
 #if MINIBEE_REVISION == 'A'
 	uint8_t MiniBee::pin_ids[] = {3,4,5,6,7,8,9,10,11, 12,13, 14,15,16,17 ,18,19,20,21 }; // ids of I/O pins
 	uint8_t MiniBee::anapin_ids[] = {14,15,16,17, 18,19,20,21 }; // ids of I/O pins	
 	uint8_t MiniBee::anapin_read_ids[] = {0,1,2,3, 4,5,6,7 }; // ids of I/O pins	
+	#define ANAPINS 8
 #endif
 
 
@@ -688,6 +690,7 @@ void MiniBee::setADXL_range( char newrange ){
 #endif
 }
 
+/*
 void MiniBee::setRemoteConfig( bool onoff ){
   if ( onoff ){
     remoteConfig = 2;
@@ -695,6 +698,7 @@ void MiniBee::setRemoteConfig( bool onoff ){
     remoteConfig = 0;
   }
 }
+*/
 
 void MiniBee::setRemoteConfig( uint8_t level ){
     remoteConfig = level;
@@ -929,8 +933,8 @@ uint8_t MiniBee::isIOPin( uint8_t id ){
 }
 
 uint8_t MiniBee::isAnalogPin( uint8_t id ){
-  uint8_t isvalid = 7;
-  for ( uint8_t j = 0; j<6; j++ ){
+  uint8_t isvalid = ANAPINS + 1;
+  for ( uint8_t j = 0; j<ANAPINS; j++ ){
       if ( anapin_ids[j] == id ){
 	  isvalid = j;
       }
@@ -973,7 +977,7 @@ void MiniBee::parseConfig(void){
 		switch( config[i+4] ){
 			case AnalogIn10bit:
 			    anapin = isAnalogPin( pin );
-			    if ( anapin < 7 ){ // check whether analog pin
+			    if ( anapin < ANAPINS + 1 ){ // check whether analog pin
 				analog_precision[ anapin ] = true;
 				analog_in[ anapin ] = true;
 // 				pinMode( pin, INPUT );
@@ -983,7 +987,7 @@ void MiniBee::parseConfig(void){
 			    break;
 			case AnalogIn:
 			    anapin = isAnalogPin( pin );
-			    if ( anapin < 7 ){ // check whether analog pin
+			    if ( anapin < ANAPINS + 1 ){ // check whether analog pin
 				analog_precision[ anapin ] = false;
 				analog_in[ anapin ] = true;
 // 				pinMode( pin, INPUT );
