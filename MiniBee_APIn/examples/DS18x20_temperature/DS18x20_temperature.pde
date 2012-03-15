@@ -42,10 +42,6 @@
 #include <XBee.h>
 #include <MiniBee_APIn.h>
 
-/// in our example we are using the capacitive sensing library to use sensors
-/// not supported by default in our library
-#include <CapSense.h>
-
 MiniBee_API Bee = MiniBee_API();
 
 OneWire  ds(10);  // on pin 10
