@@ -459,9 +459,10 @@ void MiniBee_API::routeMsg(uint8_t type, uint8_t *msg, uint8_t size, uint16_t so
 	      readConfigMsg( msg, size );
 	      if ( hasInput ){
 		status = SENSING;
-	      } else if ( hasOutput ){
+	      } else if ( hasOutput | hasCustom ){
 		actcount = 0;
 		status = ACTING;
+		sendActive();
 	      }
 	    }
 	  }
