@@ -738,7 +738,7 @@ void MiniBee_API::parseConfig(void){
 #endif
 #if MINIBEE_ENABLE_TWI_LISDL == 1
 	case TWI_LIS302DL:
-	  datasize += 6;
+	  datasize += 3;
 	  break;
 #endif
 #if MINIBEE_ENABLE_TWI_BMP == 1
@@ -1164,13 +1164,16 @@ int MiniBee_API::readTWIdevices( int dboff ){
 #if MINIBEE_ENABLE_TWI_LISDL == 1
 	      case TWI_LIS302DL:
 		accelLIS->read( &accx, &accy, &accz );
-		accx2 = (unsigned int) (accx + 2048); // from twos complement signed int to unsigned int
-		accy2 = (unsigned int) (accy + 2048); // from twos complement signed int to unsigned int
-		accz2 = (unsigned int) (accz + 2048); // from twos complement signed int to unsigned int
-		dataFromInt( accx, dboff + dbplus );
-		dataFromInt( accy, dboff + dbplus + 2 );
-		dataFromInt( accz, dboff + dbplus + 4 );
-		dbplus += 6;
+		accx2 = (unsigned int) (accx); // from twos complement signed int to unsigned int
+		accy2 = (unsigned int) (accy); // from twos complement signed int to unsigned int
+		accz2 = (unsigned int) (accz); // from twos complement signed int to unsigned int
+		outData[dboff + dbplus] = (uint8_t) accx;
+		outData[dboff + dbplus + 1] = (uint8_t) accy;
+		outData[dboff + dbplus + 2] = (uint8_t) accz;
+// 		dataFromInt( accx, dboff + dbplus );
+// 		dataFromInt( accy, dboff + dbplus + 2 );
+// 		dataFromInt( accz, dboff + dbplus + 4 );
+		dbplus += 3;
 // 		dboff += 6;
 		break;
 #endif
