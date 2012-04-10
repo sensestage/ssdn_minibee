@@ -91,6 +91,8 @@ MiniBee_API::MiniBee_API(){
   status = STARTING;
   msg_type = S_NO_MSG;
   
+  destination = COORD_ADDR;
+  
   msg_id_send = 0;
   node_id = 0;
   config_id = 0;
@@ -991,6 +993,10 @@ void MiniBee_API::sendXBeeSerial(){
   sendTx16( N_SER, serial, 11 );
 }
 
+void MiniBee_API::setDestination( uint16_t addr ){
+    destination = addr;
+    txs16.setAddress16( destination );
+}
 
 boolean MiniBee_API::sendTx16( char type, uint8_t* data, uint8_t length ){
   payload[0] = (uint8_t) type;

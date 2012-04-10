@@ -143,6 +143,8 @@ class MiniBee_API{
     void setRunning( uint8_t ); 
     void setLoopback( uint8_t ); 
     void setRemoteConfig( uint8_t ); 
+    
+    void setDestination( uint16_t );
 
     void setOutput();
     void setOutputValues( uint8_t * msg, uint8_t offset );
@@ -194,6 +196,8 @@ class MiniBee_API{
   private:
     void setMeLed( uint8_t );
     uint8_t me_status;
+    
+    uint16_t destination;
     
     	// collecting sensor data:
     void dataFromInt( unsigned int output, int offset );
