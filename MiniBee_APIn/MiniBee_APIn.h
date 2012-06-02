@@ -106,7 +106,7 @@ enum TWIDeviceConfig {
 class MiniBee_API{
   public:
     MiniBee_API();
-    void setup( long, char );
+    void setup( long, char, bool usedelay=true );
     void loopStep( bool usedelay = true );
     
     void setID( uint8_t id );
@@ -118,9 +118,11 @@ class MiniBee_API{
     
     void readXBeeSerial();
     void sendXBeeSerial();
-    
+
+    void readXBeePacket();
+
     uint8_t* sendAtCommand();
-    boolean sendTx16( char type, uint8_t* data, uint8_t length );
+    boolean sendTx16( char type, uint8_t* data, uint8_t length, bool checkStatus=true );
     
     void (*customMsgFunc)( uint8_t *, uint8_t, uint16_t );// = NULL;
     void (*dataMsgFunc)( uint8_t *, uint8_t, uint16_t );// = NULL;
@@ -194,6 +196,7 @@ class MiniBee_API{
 
 
   private:
+    bool usingDelay;
     void setMeLed( uint8_t );
     uint8_t me_status;
     
@@ -206,7 +209,6 @@ class MiniBee_API{
     uint8_t readSensors( uint8_t db );
     
     // reading xbee data:
-    void readXBeePacket();
     void routeMsg(uint8_t type, uint8_t *msg, uint8_t size, uint16_t source );
     bool checkIDMsg( uint8_t );
     bool checkNotNodeMsg( uint16_t );
