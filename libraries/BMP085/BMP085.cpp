@@ -1,32 +1,32 @@
 /****************************************************************************
 * BMP085.cpp - BMP085/I2C (Digital Pressure Sensor) library for Arduino			*
-* Copyright 2010 Filipe Vieira 																							*
-* 																																					*
-* This file	is part of BMP085 Arduino library.															*
-*																																						*
+* Copyright 2010 Filipe Vieira 								*
+* 											*
+* This file	is part of BMP085 Arduino library.					*
+*
 * This library is free software: you can redistribute it and/or modify			*
-* it under the terms of the GNU Lesser General Public License as published	*
+* it under the terms of the GNU Lesser General Public License as published		*
 * by the Free Software Foundation, either version 3 of the License, or			*
-* (at your option) any later version.																				*
-*																																						*
-* This program is distributed in the hope that it will be useful,						*
-* but WITHOUT ANY WARRANTY; without even the implied warranty of						*
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the							*
-* GNU Lesser General Public License for more details.												*
-*																																						*
-* You should have received a copy of the GNU Lesser General Public License	*
+* (at your option) any later version.							*
+*											*
+* This program is distributed in the hope that it will be useful,			*
+* but WITHOUT ANY WARRANTY; without even the implied warranty of			*
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the				*
+* GNU Lesser General Public License for more details.					*
+*											*
+* You should have received a copy of the GNU Lesser General Public License		*
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.			*
 ****************************************************************************/
 /****************************************************************************
-*	Tested on Arduino Mega with BMP085 Breakout																*
-*	SDA 		-> pin 20			(no pull up resistors)															*
-*	SCL 		-> pin 21			(no pull up resistors)															*
-*	XCLR 		-> not connected																									*
-*	EOC 		-> not connected																									*
-*	GND 		-> pin GND																												*
-*	VCC			-> pin 3.3V 																											*
-* NOTE: SCL and SDA needs pull-up resistors for each I2C bus. 							*
-*		2.2kOhm..10kOhm, typ. 4.7kOhm																						*
+*	Tested on Arduino Mega with BMP085 Breakout					*
+*	SDA 		-> pin 20			(no pull up resistors)		*
+*	SCL 		-> pin 21			(no pull up resistors)		*
+*	XCLR 		-> not connected						*
+*	EOC 		-> not connected						*
+*	GND 		-> pin GND							*
+*	VCC			-> pin 3.3V 						*
+* NOTE: SCL and SDA needs pull-up resistors for each I2C bus. 				*
+*		2.2kOhm..10kOhm, typ. 4.7kOhm						*
 *****************************************************************************/
 #include "BMP085.h"
 #include <Wire.h>
@@ -50,7 +50,7 @@ void BMP085::init() {
 }
 
 void BMP085::init(byte _BMPMode, float _initVal, bool _Unitmeters){     
-	getCalData();									// initialize cal data
+	getCalData();					// initialize cal data
 	calcTrueTemperature();  			// initialize b5
 	setMode(_BMPMode);
 	_Unitmeters ? setLocalAbsAlt(_initVal) : setLocalPressure(_initVal); 
@@ -72,7 +72,7 @@ void BMP085::setLocalPressure(float _hPa){
 	float tmp_alt;
 	
 	_param_datum = _hPa;			
-	getAltitude(&tmp_alt);				// calc altitude based on current pressure			
+	getAltitude(&tmp_alt);				// calc altitude based on current pressure
 	_param_meters = tmp_alt;
 }
 
@@ -113,7 +113,7 @@ void BMP085::getAltitude(float *_meters){
 }
 
 void BMP085::getTemperature(float *_Temperature) {
-		calcTrueTemperature();								// force b5 update
+		calcTrueTemperature();			// force b5 update
 	*_Temperature = ((b5 + 8) >> 4) / 10.0;
 }
 
@@ -123,7 +123,7 @@ void BMP085::calcTrueTemperature(){
 
 	//read Raw Temperature
 	writemem(CONTROL, READ_TEMPERATURE);
-	delayMicroseconds(4500);   												// min. 4.5ms read Temp delay
+	delayMicroseconds(4500);   			// min. 4.5ms read Temp delay
 	readmem(CONTROL_OUTPUT, 2, _buff);	
 	ut = ((long)_buff[0] << 8 | ((long)_buff[1]));	  // uncompensated temperature value
 		
@@ -138,17 +138,17 @@ void BMP085::calcTruePressure(long *_TruePressure) {
 	unsigned long b4,b7;
 
 	#if AUTO_UPDATE_TEMPERATURE
-		calcTrueTemperature();								// b5 update 
+		calcTrueTemperature();			// b5 update 
 	#endif	
 	
 	//read Raw Pressure
 	writemem(CONTROL, READ_PRESSURE+(_oss << 6));
-	delayMicroseconds(_pressure_waittime[_oss]);   	
-	readmem(CONTROL_OUTPUT, 3, _buff);		
+	delayMicroseconds(_pressure_waittime[_oss]);
+	readmem(CONTROL_OUTPUT, 3, _buff);
 	up = ((((long)_buff[0] <<16) | ((long)_buff[1] <<8) | ((long)_buff[2])) >> (8-_oss));	// uncompensated pressure value
 		
 	// calculate true pressure
-	b6 = b5 - 4000;													// b5 is updated by calcTrueTemperature().
+	b6 = b5 - 4000;					// b5 is updated by calcTrueTemperature().
 	x1 = (b2* (b6 * b6 >> 12)) >> 11;
 	x2 = ac2 * b6 >> 11;
 	x3 = x1 + x2;
@@ -246,24 +246,37 @@ void BMP085::getCalData() {
 
 void BMP085::writemem(byte _addr, byte _val) {
 	Wire.beginTransmission(_dev_address); 	// start transmission to device 
-	Wire.send(_addr);        								// send register address
-	Wire.send(_val);        								// send value to write
-	Wire.endTransmission(); 								// end transmission
+#if defined(ARDUINO) && ARDUINO >= 100
+	Wire.write( (byte) _addr);        			// send register address
+	Wire.write( (byte) _val);        			// send value to write
+#else
+	Wire.send(_addr);        				// send register address
+	Wire.send(_val);        				// send value to write
+#endif
+	Wire.endTransmission(); 				// end transmission
 }
 
 void BMP085::readmem(byte _addr, int _nbytes, byte __buff[]) {
 	Wire.beginTransmission(_dev_address); 	// start transmission to device 
-	Wire.send(_addr);             					// sends register address to read from
-	Wire.endTransmission();         				// end transmission
+#if defined(ARDUINO) && ARDUINO >= 100
+	Wire.write( (byte) _addr);        			// send register address
+#else
+	Wire.send(_addr);        				// send register address
+#endif
+	Wire.endTransmission();         			// end transmission
 	Wire.beginTransmission(_dev_address);  	// start transmission to device 
 	Wire.requestFrom(_dev_address, _nbytes);// send data n-bytes read
 	
 	byte i = 0; 
-	while (Wire.available()) {  		
-		__buff[i] = Wire.receive();    				// receive DATA
+	while (Wire.available()) { 
+#if defined(ARDUINO) && ARDUINO >= 100
+	  __buff[i] = Wire.read();    				// receive DATA
+#else  
+	  __buff[i] = Wire.receive();    			// receive DATA
+#endif
 		i++;
 	}
-	Wire.endTransmission();									// end transmission
+	Wire.endTransmission();					// end transmission
 }
 
 

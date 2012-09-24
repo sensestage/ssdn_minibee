@@ -12,10 +12,18 @@
  * GNU License V2 for more details.                                        *
  *                                                                         *
  ***************************************************************************/
-#include "WProgram.h"
 
 #ifndef LIS302DL_h
 #define LIS302DL_h
+
+#if defined(ARDUINO) && ARDUINO >= 100
+#include <Arduino.h>
+#else
+#include <WProgram.h>
+#endif
+
+#include <Wire.h>
+
 
 /* ------- Register names ------- */
 

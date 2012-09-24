@@ -18,8 +18,6 @@
  */
 
 #include "XBee.h"
-#include "WProgram.h"
-#include "HardwareSerial.h"
 
 XBeeResponse::XBeeResponse() {
 
@@ -1340,10 +1338,19 @@ void XBee::sendByte(uint8_t b, bool escape) {
 
 	if (escape && (b == START_BYTE || b == ESCAPE || b == XON || b == XOFF)) {
 //		std::cout << "escaping byte [" << toHexString(b) << "] " << std::endl;
+#if defined(ARDUINO) && ARDUINO >= 100
+		Serial.write(ESCAPE);
+		Serial.write(b ^ 0x20);
+#else
 		Serial.print(ESCAPE, BYTE);
 		Serial.print(b ^ 0x20, BYTE);
+#endif
 	} else {
+#if defined(ARDUINO) && ARDUINO >= 100
+		Serial.write(b);
+#else
 		Serial.print(b, BYTE);
+#endif
 	}
 }
 

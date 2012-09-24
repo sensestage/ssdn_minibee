@@ -27,14 +27,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
  
-#include "WProgram.h"
+// #include "WProgram.h"
 #include "HMC5843.h"
+
+#include <Wire.h>
 
 
 /* PUBLIC METHODS */
 
 HMC5843::HMC5843() { 
-  
   x_scale=1;
   y_scale=1;
   z_scale=1;
@@ -108,8 +109,13 @@ void HMC5843::setGain(unsigned char gain) {
 
 void HMC5843::writeReg(unsigned char reg, unsigned char val) {
   Wire.beginTransmission(HMC5843_ADDR);
+#if defined(ARDUINO) && ARDUINO >= 100
+  Wire.write( (byte) reg);        // send register address
+  Wire.write( (byte) val);        // send value to write
+#else
   Wire.send(reg);        // send register address
   Wire.send(val);        // send value to write
+#endif
   Wire.endTransmission(); //end transmission
 }
 
@@ -125,22 +131,32 @@ void HMC5843::getValues(int *x,int *y,int *z) {
 void HMC5843::getValuesInt(int *x,int *y,int *z) {
   int xr,yr,zr;
   Wire.beginTransmission(HMC5843_ADDR);
+#if defined(ARDUINO) && ARDUINO >= 100
+  Wire.write( (byte) HMC5843_R_XM); // will start from DATA X MSB and fetch all the others
+#else
   Wire.send(HMC5843_R_XM); // will start from DATA X MSB and fetch all the others
+#endif
   Wire.endTransmission();
   
   Wire.beginTransmission(HMC5843_ADDR);
   Wire.requestFrom(HMC5843_ADDR, 6);
   if(6 == Wire.available()) {
     // read out the 3 values, 2 bytes each.
+#if defined(ARDUINO) && ARDUINO >= 100
+    xr = Wire.read();
+    xr = (xr << 8) + Wire.read();
+    yr = Wire.read();
+    yr = (yr << 8) + Wire.read();
+    zr = Wire.read();
+    zr = (zr << 8) + Wire.read();
+#else
     xr = Wire.receive();
     xr = (xr << 8) + Wire.receive();
-//     *x= xr) / x_scale;
     yr = Wire.receive();
     yr = (yr << 8) + Wire.receive();
-//     *y = ((float) yr) / y_scale;
     zr = Wire.receive();
     zr = (zr << 8) + Wire.receive();
-//     *z = ((float) zr) / z_scale;
+#endif
     *x = xr; *y = yr; *z=zr;
     // the HMC5843 will automatically wrap around on the next request
   }
@@ -150,21 +166,34 @@ void HMC5843::getValuesInt(int *x,int *y,int *z) {
 void HMC5843::getValues(float *x,float *y,float *z) {
   int xr,yr,zr;
   Wire.beginTransmission(HMC5843_ADDR);
+#if defined(ARDUINO) && ARDUINO >= 100
+  Wire.write( (byte) HMC5843_R_XM); // will start from DATA X MSB and fetch all the others
+#else
   Wire.send(HMC5843_R_XM); // will start from DATA X MSB and fetch all the others
+#endif
   Wire.endTransmission();
   
   Wire.beginTransmission(HMC5843_ADDR);
   Wire.requestFrom(HMC5843_ADDR, 6);
   if(6 == Wire.available()) {
-    // read out the 3 values, 2 bytes each.
+    
+#if defined(ARDUINO) && ARDUINO >= 100
+    xr = Wire.read();
+    xr = (xr << 8) + Wire.read();
+    yr = Wire.read();
+    yr = (yr << 8) + Wire.read();
+    zr = Wire.read();
+    zr = (zr << 8) + Wire.read();
+#else
     xr = Wire.receive();
     xr = (xr << 8) + Wire.receive();
-    *x= ((float) xr) / x_scale;
     yr = Wire.receive();
     yr = (yr << 8) + Wire.receive();
-    *y = ((float) yr) / y_scale;
     zr = Wire.receive();
     zr = (zr << 8) + Wire.receive();
+#endif    
+    *x = ((float) xr) / x_scale;
+    *y = ((float) yr) / y_scale;
     *z = ((float) zr) / z_scale;
     // the HMC5843 will automatically wrap around on the next request
   }

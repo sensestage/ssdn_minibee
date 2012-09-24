@@ -17,8 +17,9 @@
  * along with MiniBee_API.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include <Wire.h>
-// 
+
 #include <LIS302DL.h>
 #include <ADXL345.h>
 #include <TMP102.h>
@@ -26,6 +27,7 @@
 #include <HMC5843.h>
 
 #include <XBee.h>
+
 #include <MiniBee_APIn.h>
 
 MiniBee_API mbee = MiniBee_API();

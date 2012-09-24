@@ -12,10 +12,16 @@
  * GNU License V2 for more details.                                        *
  *                                                                         *
  ***************************************************************************/
-#include "WProgram.h"
 
 #ifndef TMP102_h
 #define TMP102_h
+
+#if defined(ARDUINO) && ARDUINO >= 100
+#include <Arduino.h>
+#else
+#include <WProgram.h>
+#endif
+
 
 /* ------- Register names ------- */
 

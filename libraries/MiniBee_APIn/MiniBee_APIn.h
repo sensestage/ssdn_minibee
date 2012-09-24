@@ -20,7 +20,12 @@
 #ifndef MiniBee_APIn_h
 #define MiniBee_APIn_h
 
+#if defined(ARDUINO) && ARDUINO >= 100
+#include <Arduino.h>
+#else
 #include <WProgram.h>
+#endif
+
 // #include <avr/interrupt.h>
 #include <avr/eeprom.h>
 #include <inttypes.h>

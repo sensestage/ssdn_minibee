@@ -12,8 +12,9 @@
  * GNU License V2 for more details.                                        *
  *                                                                         *
  ***************************************************************************/
-#include "WProgram.h"
+
 #include "LIS302DL.h"
+
 #include <Wire.h>
 
 LIS302DL::LIS302DL(){
@@ -22,10 +23,15 @@ LIS302DL::LIS302DL(){
 void LIS302DL::setup(){
       //------- LIS302DL setup --------------
       Wire.beginTransmission(LIS302DL_addres1);
-      Wire.send(0x21); // CTRL_REG2 (21h)
-      Wire.send(B01000000);
+#if defined(ARDUINO) && ARDUINO >= 100
+      Wire.write( (byte) 0x21); // CTRL_REG2 (21h)
+      Wire.write( (byte) B01000000);
+#else
+      Wire.send( 0x21); // CTRL_REG2 (21h)
+      Wire.send( B01000000);
+#endif
       Wire.endTransmission();
-      
+   
 	//SPI 4/3 wire
 	//1=ReBoot - reset chip defaults
 	//n/a
@@ -36,8 +42,13 @@ void LIS302DL::setup(){
 	//filter freq LSB - Hipass filter (at 400hz) 00=8hz, 01=4hz, 10=2hz, 11=1hz (lower by 4x if sample rate is 100hz)   
 
       Wire.beginTransmission(LIS302DL_addres1);
+#if defined(ARDUINO) && ARDUINO >= 100
+      Wire.write( (byte) 0x20); // CTRL_REG1 (20h)
+      Wire.write( (byte) B01000111);
+#else
       Wire.send(0x20); // CTRL_REG1 (20h)
       Wire.send(B01000111);
+#endif
       Wire.endTransmission();
       
 	//sample rate 100/400hz
@@ -63,8 +74,12 @@ int LIS302DL::readTWI(int address, int bytes) {
 	uint8_t i = 0;
 	int twi_reading[bytes];
 	Wire.requestFrom(address, bytes);
-	while(Wire.available()) {   
+	while(Wire.available()) {
+#if defined(ARDUINO) && ARDUINO >= 100
+		twi_reading[i] = Wire.read();
+#else
 		twi_reading[i] = Wire.receive();
+#endif
 		i++;
 	}
 	return *twi_reading;
@@ -75,11 +90,19 @@ int LIS302DL::readTWI(int address, int reg, int bytes) {
 	uint8_t i = 0;
 	int twi_reading[bytes];
 	Wire.beginTransmission(address);
+#if defined(ARDUINO) && ARDUINO >= 100
+	Wire.write( (byte) reg);                   //set x register
+#else
 	Wire.send(reg);                   //set x register
+#endif
 	Wire.endTransmission();
 	Wire.requestFrom(address, bytes);            //retrieve x value
 	while(Wire.available()) {   
+#if defined(ARDUINO) && ARDUINO >= 100
+		twi_reading[i] = Wire.read();
+#else
 		twi_reading[i] = Wire.receive();
+#endif
 		i++;
 	}
 	return *twi_reading;

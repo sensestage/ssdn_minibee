@@ -17,7 +17,6 @@
  * along with MiniBee_API.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "WProgram.h"
 #include "MiniBee_APIn.h"
 
 #define XBEE_SLEEP_PIN 2
