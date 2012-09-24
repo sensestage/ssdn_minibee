@@ -14,9 +14,29 @@ minibee.bootloader.file=ATmegaBOOT_168_minibee_12MHz.hex
 minibee.bootloader.unlock_bits=0x3F
 minibee.bootloader.lock_bits=0x0F
 
-minibee.build.mcu=atmega328p
+minibee.build.mcu=atmega328
 minibee.build.f_cpu=12000000L
 minibee.build.core=minibee
+
+#############################
+
+minibeep.name=Sense Stage MiniBee (3.3V, 12 MHz) w/ ATmega328p
+
+minibeep.upload.protocol= stk500
+minibeep.upload.maximum_size=30720
+minibeep.upload.speed=57600
+
+minibeep.bootloader.low_fuses=0xFF
+minibeep.bootloader.high_fuses=0xDA
+minibeep.bootloader.extended_fuses=0x05
+minibeep.bootloader.path=minibee
+minibeep.bootloader.file=ATmegaBOOT_168_minibee_12MHz.hex
+minibeep.bootloader.unlock_bits=0x3F
+minibeep.bootloader.lock_bits=0x0F
+
+minibeep.build.mcu=atmega328p
+minibeep.build.f_cpu=12000000L
+minibeep.build.core=minibee
 
 ##############################################################
 
