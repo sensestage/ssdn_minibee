@@ -87,7 +87,7 @@ uint8_t myConfig[] = { 0, 1, 0, 50, 1, // null, config id, msgInt high byte, msg
   AnalogOut, NotUsed, AnalogOut, AnalogOut, DigitalIn, DigitalOut, // D3 to D8 (D4 is reserved for status LED)
   AnalogOut, AnalogOut, AnalogOut, NotUsed, NotUsed,  // D9,D10,D11,D12,D13 (D12, D13 are also reserved)
   AnalogIn10bit, AnalogIn10bit, AnalogIn10bit, NotUsed, TWIData, TWIClock, NotUsed, NotUsed, // A0, A1, A2, A3, A4, A5, A6, A7
-  1, TWI_ADXL345
+  1, TWI_ADXL345 // 1 I2C/TWI device: the ADXL
 };
 
 void setup() {
@@ -96,6 +96,7 @@ void setup() {
     
   Bee.readConfigMsg( myConfig, 26 );
   
+  // set the destination address where our sensed data will be sent to
   Bee.setDestination( otherXBee );
   
   // set the custom message function
@@ -105,7 +106,7 @@ void setup() {
 int datasize;
 uint8_t * data;
 
-uint8_t outData[4] = { 0, 0, 0, 0};
+uint8_t outData[7] = { 0, 0, 0, 0, 0, 0, 0};
 
 void loop() {  
   // do a loop step of the remaining firmware:
@@ -123,22 +124,22 @@ void loop() {
   
   myDigitalValue = bitRead( data[0], 1 );
   // no more than 8 digital values were sent, so the rest of the package is analog data (and accelero data).
-  int cnt = 3;
-  for ( int i=0; i<3; i++ ){
+  uint8_t cnt = 1;
+  for ( uint8_t i=0; i<3; i++ ){
     myAnalogValues[i] = data[ cnt ] * 256 + data[ cnt+1 ]; // convert the two bytes of data to an int
     cnt += 2; // add two to the count
   }
-  for ( int i=0; i<3; i++ ){
+  for ( uint8_t i=0; i<3; i++ ){
     myAcceleroValues[i] = data[ cnt ] * 256 + data[ cnt+1 ]; // convert the two bytes of data to an int
     cnt += 2; // add two to the count
   }
   
   // map my analog inputs to analog outputs
-  for ( int i=0; i<3; i++ ){
+  for ( uint8_t i=0; i<3; i++ ){
     outData[i] = map( myAnalogValues[i], 0, 1023, 0, 255 );
   }
   // map other analog inputs to analog outputs
-  for ( int i=0; i<3; i++ ){
+  for ( uint8_t i=0; i<3; i++ ){
     outData[i+3] = map( otherAnalogValues[i], 0, 1023, 0, 255 );
   }
   // map digital in to digital out
@@ -150,5 +151,5 @@ void loop() {
   // actual send it to the pins
   Bee.setOutput();
   
-  delay( 50 ); // but do the delay here manually
+  delay( 50 ); // do the delay here manually
 }
