@@ -229,6 +229,11 @@ void MiniBee_API::dataFromInt( unsigned int output, int offset ){
     outData[offset+1] = byte(output%256);
 }
 
+void MiniBee_API::dataFromUInt( uint16_t output, int offset ){
+    outData[offset]   = byte(output/256);
+    outData[offset+1] = byte(output%256);
+}
+
 void MiniBee_API::dataFromLong24( unsigned long output, int offset ){
     output = output % 16777216; // 24 bits
     outData[offset]   = byte( output / 65536 );
@@ -855,8 +860,17 @@ void MiniBee_API::addCustomData( char * cdata, uint8_t n ){
 void MiniBee_API::addCustomData( int * cdata, uint8_t n ){
     if ( status == SENSING ){
 	for ( uint8_t i=0; i<n; i++){
-	dataFromInt( cdata[i], datacount );
-	    datacount += 2;  
+	  dataFromInt( cdata[i], datacount );
+	  datacount += 2;  
+	}
+    }
+}
+
+void MiniBee_API::addCustomData( uint16_t * cdata, uint8_t n ){
+    if ( status == SENSING ){
+	for ( uint8_t i=0; i<n; i++){
+	  dataFromUInt( cdata[i], datacount );
+	  datacount += 2;  
 	}
     }
 }
