@@ -41,7 +41,7 @@ MiniBee_API Bee = MiniBee_API();
 /// e.g. 13 and 14
 /// ATMY
 
-uint16_t otherXBee = 13;
+uint16_t otherXBee = 0x0D;
 
 /// this will be our parser for the data messages we will receive from other nodes:
 /// msg[0] and msg[1] will be msg type ('d') and message ID
