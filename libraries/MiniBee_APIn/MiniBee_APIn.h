@@ -37,7 +37,7 @@
 
 
 // #define MINIBEE_REVISION 'D'
-#define MINIBEE_LIBVERSION 5
+#define MINIBEE_LIBVERSION 6
 
 /// all together: 3644 bytes
 #define MINIBEE_ENABLE_TWI 1  /// TWI/I2C takes up 2064 bytes
@@ -87,6 +87,7 @@ enum MiniBeePinConfig {
   SHTClock, SHTData, 
   TWIClock, TWIData,
   Ping,
+  DigitalInPullup,
 //   OneWire,
   Custom = 100,
   MeID = 150,

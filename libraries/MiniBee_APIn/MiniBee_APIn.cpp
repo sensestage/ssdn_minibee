@@ -696,6 +696,17 @@ void MiniBee_API::parseConfig(void){
 	datasize += 1;
 	hasInput = true;
 	break;
+      case DigitalInPullup:
+#if defined(ARDUINO) && ARDUINO >= 100
+	pinMode( cfpin, INPUT_PULLUP );
+#else
+	pinMode( cfpin, INPUT );
+	digitalWrite( cfpin, HIGH );
+#endif
+	digital_in[i] = true;
+	datasize += 1;
+	hasInput = true;
+	break;
       case AnalogOut:
 	for ( uint8_t j=0; j < 6; j++ ){
 	  if ( pwm_pins[j] == cfpin ){
