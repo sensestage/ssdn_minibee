@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<xml>
+  <hive name="ledfade">
+    <configuration id="1" message_interval="100" name="ledfade" redundancy="7" samples_per_message="1">
+      <customconf>
+        <data id="0" name="red_state" offset="0" scale="1" size="1"/>
+        <data id="1" name="blue_state" offset="0" scale="1" size="1"/>
+        <data id="2" name="green_state" offset="0" scale="1" size="1"/>
+        <data id="3" name="red_intensity" offset="0" scale="255" size="2"/>
+        <data id="4" name="green_intensity" offset="0" scale="255" size="2"/>
+        <data id="5" name="blue_intensity" offset="0" scale="255" size="2"/>
+      </customconf>
+    </configuration>
+  </hive>
+</xml>
