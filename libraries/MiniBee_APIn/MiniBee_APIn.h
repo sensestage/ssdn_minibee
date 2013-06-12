@@ -125,6 +125,9 @@ class MiniBee_API{
     void sendXBeeSerial();
 
     void readXBeePacket();
+    
+    void sleepXBee();
+    void wakeXBee();    
 
     uint8_t* sendAtCommand();
     boolean sendTx16( char type, uint8_t* data, uint8_t length, bool checkStatus=true );
@@ -322,4 +325,4 @@ class MiniBee_API{
 
 };
 
-#endif	
+#endif

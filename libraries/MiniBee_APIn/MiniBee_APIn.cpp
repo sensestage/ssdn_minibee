@@ -52,6 +52,8 @@
 #define ACTING 4
 #define PAUSING 5
 
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 
 #define PIN_CONFIG_BYTES 19 // 23 for base config. 4 for other stuff, so 19 for the pins
 
@@ -108,7 +110,7 @@ MiniBee_API::MiniBee_API(){
   hasOutput = false;
   hasCustom = false;
   
-  remoteConfig = 2;	
+  remoteConfig = 2;
 
   prev_id_msg = 255;
   
@@ -169,10 +171,23 @@ void MiniBee_API::setup( long baud_rate, char boardrev, bool usedelay ) {
   status = WAITFORHOST;
 }
 
+void MiniBee_API::sleepXBee(){
+  digitalWrite(  XBEE_SLEEP_PIN, 1 );
+}
+
+void MiniBee_API::wakeXBee(){
+  digitalWrite(  XBEE_SLEEP_PIN, 0 );  
+}
+
 // TODO: check:
+
+void MiniBee_API::loopReadOnly(){
+  readXBeePacket();
+}
 
 void MiniBee_API::loopStep( bool usedelay ){
   usingDelay = usedelay;
+  readXBeePacket();
   switch( status ){
     case STARTING:
       if ( usedelay ){ delay( 100 ); }
@@ -208,7 +223,7 @@ void MiniBee_API::loopStep( bool usedelay ){
       if ( usedelay ){ delay( smpInterval ); }
       break;
     case PAUSING:
-      if ( actcount == 0 ){ // send an I'm paused message every 100 smpIntervals
+      if ( actcount == 0 ){ // send an I'm paused message every 500 smpIntervals
 	sendPaused();
       }
       if ( usedelay ){ delay( 500 ); }
@@ -216,8 +231,6 @@ void MiniBee_API::loopStep( bool usedelay ){
   }
   actcount++;
   actcount = actcount%100;
-  
-  readXBeePacket();
 }
 
 #define ANAPINS 8
@@ -389,6 +402,15 @@ void MiniBee_API::readXBeePacket(){
 //       flashLed(STATUS_LED, 1, 10);    
 //     }
     }
+//     else if ( xbee.getResponse().getApiId() == TX_STATUS_RESPONSE ){
+//        xbee.getResponse().getTxStatusResponse(txStatus);
+//        // get the delivery status, the fifth byte
+// 	if (txStatus.getStatus() == SUCCESS) {
+// 	  cbi( PIND, STATUS_LED );
+// 	} else {
+// 	  sbi( PIND, STATUS_LED );
+// 	}
+//     }
   }
 //   sendTx16( N_INFO, data, datasize );
 }
@@ -1027,10 +1049,11 @@ boolean MiniBee_API::sendTx16( char type, uint8_t* data, uint8_t length, bool ch
 //   flashLed(STATUS_LED, 1, 100);
 
   if ( checkStatus ){
-    digitalWrite( STATUS_LED, 0 );
+    cbi( PIND, STATUS_LED );
+//    digitalWrite( STATUS_LED, 0 );
     // after sending a tx request, we expect a status response
     // wait up to 20 milliseconds for the status response
-    if (xbee.readPacket( 20 )) { // got a response!
+    if (xbee.readPacket( 10 )) { // got a response!
 	// should be a znet tx status            	
 	if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
 	  xbee.getResponse().getTxStatusResponse(txStatus);
@@ -1042,17 +1065,45 @@ boolean MiniBee_API::sendTx16( char type, uint8_t* data, uint8_t length, bool ch
 // 	  } else {
 		// the remote XBee did not receive our packet. is it powered on?
 // 		flashLed(STATUS_LED, 3, 50);
-	    digitalWrite( STATUS_LED, 1 );
+	    sbi( PIND, STATUS_LED );
+// 	    digitalWrite( STATUS_LED, 1 );
 	    return false;
 	  }
 	}      
     } else {
       // local XBee did not provide a timely TX Status Response -- should not happen
 //       flashLed(STATUS_LED, 3, 50);
-	digitalWrite( STATUS_LED, 1 );
+	sbi( PIND, STATUS_LED );
+// 	digitalWrite( STATUS_LED, 1 );
 	return false;
     }
   }
+/*
+  else { // not check status, but we should somehow, but without using delay...
+    cbi( PIND, STATUS_LED );
+    uint8_t times = 0;
+    while ( (!(xbee.getResponse().isAvailable() || xbee.getResponse().isError())) && (times < 100) ) { // try at least 50 times
+	// read some more
+	xbee.readPacket();
+	times++;
+    }
+    if ( xbee.getResponse().isError() ){
+      sbi( PIND, STATUS_LED );
+      return false;
+    } else {
+      // should be a znet tx status            	
+      if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
+	xbee.getResponse().getTxStatusResponse(txStatus);
+	  // get the delivery status, the fifth byte
+	if (txStatus.getStatus() != SUCCESS) {
+	  sbi( PIND, STATUS_LED );
+// 	    digitalWrite( STATUS_LED, 1 );
+	  return false;
+	}
+      }    
+    }
+  }
+*/  
   return true;
 }
 
