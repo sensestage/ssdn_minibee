@@ -113,6 +113,7 @@ class MiniBee_API{
     MiniBee_API();
     void setup( long, char, bool usedelay=true );
     void loopStep( bool usedelay = true );
+    void loopReadOnly();
     
     void setID( uint8_t id );
     uint8_t getId(void);
