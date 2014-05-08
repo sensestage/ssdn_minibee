@@ -35,9 +35,64 @@ void ADXL345::init(){
 void ADXL345::powerOn() {
   Wire.begin();        // join i2c bus (address optional for master)
   //Turning on the ADXL345
-  writeTo(ADXL345_POWER_CTL, 0);      
-  writeTo(ADXL345_POWER_CTL, 16);
-  writeTo(ADXL345_POWER_CTL, 8); 
+  writeTo(ADXL345_POWER_CTL, 0);  // 0b 0000 0000    
+//   writeTo(ADXL345_POWER_CTL, 16); // 0b 0001 0000
+  writeTo(ADXL345_POWER_CTL, 8);  // 0b 0000 1000 // measure on
+}
+
+void ADXL345::setAutoSleep( bool on ){
+  byte _b;
+  byte newval = 0;
+  readFrom(ADXL345_POWER_CTL, 1, &_b);
+  if ( on ){
+    newval = _b | B00110000;
+    writeTo( ADXL345_POWER_CTL, newval );
+  } else {
+    newval |= (_b & B00001111);
+    writeTo( ADXL345_POWER_CTL, newval );    
+  }
+}
+
+void ADXL345::setSleepSenseRate( int val ){
+  byte _s;
+  byte _b;
+
+  switch (val) {
+  case 8:  
+    _s = B00000000; 
+    break;
+  case 4:  
+    _s = B00000001; 
+    break;
+  case 2:  
+    _s = B00000010; 
+    break;
+  case 1: 
+    _s = B00000011; 
+    break;
+  default: 
+    _s = B00000000;
+  }
+  readFrom(ADXL345_POWER_CTL, 1, &_b);
+  _s |= (_b & B11111100);
+  writeTo(ADXL345_POWER_CTL, _s);
+}
+
+void ADXL345::sleep(){
+  byte _b;
+  byte newval = 0; // measure off = standby
+  readFrom(ADXL345_POWER_CTL, 1, &_b);
+  newval |= ( _b & B00110011 );
+  writeTo(ADXL345_POWER_CTL, newval);
+}
+
+void ADXL345::wake(){
+  byte _b;
+  byte newval = B00001000; // measure on = wake up
+  readFrom(ADXL345_POWER_CTL, 1, &_b);
+  writeTo(ADXL345_POWER_CTL, 0);  // 0b 0000 0000    
+  newval |= ( _b & B00110011 );
+  writeTo(ADXL345_POWER_CTL, newval);
 }
 
 // Reads the acceleration into three variable x, y and z
@@ -54,7 +109,7 @@ void ADXL345::readAccel(int *x, int *y, int *z) {
   *z = (((int)_buff[5]) << 8) | _buff[4];
 }
 
-void ADXL345::readAccelRaw(char *data, int dboff) {
+void ADXL345::readAccelRaw(uint8_t *data, int dboff) {
     readFrom(ADXL345_DATAX0, TO_READ, _buff); //read the acceleration data from the ADXL345
     
     // each axis reading comes in 10 bit resolution, ie 2 bytes.  Least Significat Byte first!!

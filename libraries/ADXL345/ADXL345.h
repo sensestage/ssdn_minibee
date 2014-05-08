@@ -106,9 +106,13 @@ public:
   ADXL345();
   void init();
   void powerOn();
+  void setAutoSleep( bool on );
+  void setSleepSenseRate( int val );
+  void sleep();
+  void wake();
   void readAccel(int* xyx);
   void readAccel(int* x, int* y, int* z);
-    void readAccelRaw(char *data, int dboff);
+  void readAccelRaw(uint8_t *data, int dboff);
   void get_Gxyz(double *xyz);
 
   void setTapThreshold(int tapThreshold);
