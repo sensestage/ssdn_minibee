@@ -18,6 +18,8 @@ minibeep.build.mcu=atmega328p
 minibeep.build.f_cpu=12000000L
 minibeep.build.core=minibee
 minibeep.build.variant=minibee
+minibeep.build.cppoption1=-fno-use-cxa-atexit
+
 
 ##############################################################
 
@@ -39,6 +41,7 @@ minibee.build.mcu=atmega328
 minibee.build.f_cpu=12000000L
 minibee.build.core=minibee
 minibee.build.variant=minibee
+minibee.build.cppoption1=-fno-use-cxa-atexit
 
 #############################
 
@@ -61,5 +64,6 @@ minibee8.build.f_cpu=8000000L
 
 minibee8.build.core=minibee
 minibee8.build.variant=minibee
+minibee8.build.cppoption1=-fno-use-cxa-atexit
 
 ##############################################################
