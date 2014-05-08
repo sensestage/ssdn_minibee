@@ -174,6 +174,12 @@ class MiniBee_API{
     bool getFlagTWI();	//returns twi flag state
     int readTWIdevices(int dboff);
     void setupTWIdevices(void);
+
+    void standbyADXL();
+    void wakeADXL();
+    void enableAutoSleepADXL( bool );
+    bool isAsleepADXL();
+    void inactivityThresholdADXL( int activTH, int inactivTH, int timeTH );
 #endif
 
 #if MINIBEE_ENABLE_SHT == 1
@@ -309,6 +315,10 @@ class MiniBee_API{
     uint8_t nr_twi_devices;
     #if MINIBEE_ENABLE_TWI_ADXL == 1
       ADXL345 * accelADXL;
+      bool adxlShouldEnableSleep;
+      int adxlTHactive;
+      int adxlTHinactive;
+      int adxlTHtime;
     #endif
     #if MINIBEE_ENABLE_TWI_LISDL == 1
       LIS302DL * accelLIS;

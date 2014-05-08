@@ -588,7 +588,7 @@ bool MiniBee_API::isIOPin( uint8_t id ){
       }
       // continue with cases of 'B'
     case 'B':
-      if ( id == 12 | id == 13 ){
+      if ( (id == 12) || (id == 13) ){
 	isvalid = false;
       }
       break;
@@ -612,7 +612,7 @@ bool MiniBee_API::isAnalogPin( uint8_t id ){
       break;
     case 'B':
     case 'D':
-      if ( anapin == 4 | anapin == 5){
+      if ( (anapin == 4) || (anapin == 5) ){
 	isvalid = false;
       }
       break;
@@ -627,12 +627,12 @@ bool MiniBee_API::isAnalogPin( uint8_t id ){
 
 void MiniBee_API::parseConfig(void){
   
-  char info [3];
+//   char info [3];
   
   uint8_t anapin;
-  uint8_t iopin;
+//   uint8_t iopin;
   uint8_t cfpin;
-  uint8_t pin = 0;
+//   uint8_t pin = 0;
   uint8_t datasizeout = 0;
   datasize = 0;
 
@@ -659,12 +659,8 @@ void MiniBee_API::parseConfig(void){
   for( uint8_t i = 0; i < nrpins; i++){
     cfpin = i + PINOFFSET; // index based on config bytes (pins 3 t/m 21)
     if ( isIOPin( cfpin ) ){
-//     pin = pin_ids[i];
-//     iopin = isIOPin( cfpin ); // index into pin_ids
-/*    if ( iopin < NRPINS ){
-      pin = pin_ids[ iopin ]; // actual pin number
-*/
-/*		 info[0] = (char) i;
+/*
+		 info[0] = (char) i;
 		 info[1] = (char) pin;
 		 info[2] = (char) config[i+4];
 		 send( N_INFO, info, 3 );
@@ -959,7 +955,6 @@ void MiniBee_API::setID( uint8_t id ){
 
 
 void MiniBee_API::readXBeeSerial() {
-  byte cnt;
   uint8_t *response1;
   uint8_t *response2;
 
@@ -1176,6 +1171,10 @@ void MiniBee_API::setupTWIdevices(void){
 		accelADXL->setJustifyBit( false );
 		accelADXL->setFullResBit( true );
 		accelADXL->setRangeSetting( 16 ); // 2: 2g, 4: 4g, 8: 8g, 16: 16g
+		if ( adxlShouldEnableSleep ){
+		    inactivityThresholdADXL( adxlTHactive, adxlTHinactive, adxlTHtime );
+		    enableAutoSleepADXL( true );
+		}
 		break;
 #endif
 #if MINIBEE_ENABLE_TWI_LISDL == 1
@@ -1307,7 +1306,65 @@ int MiniBee_API::readTWIdevices( int dboff ){
 	return dbplus;
 }
 
+bool MiniBee_API::isAsleepADXL(){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
+  // query activity of ADXL sensor
+  return accelADXL->isAsleep();
 #endif
+  return false;
+}
+
+void MiniBee_API::enableAutoSleepADXL( bool on ){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
+  adxlShouldEnableSleep = on;
+
+  if ( accelADXL != NULL ){
+    accelADXL->setActivityAc( on );
+    accelADXL->setActivityX( on );
+    accelADXL->setActivityY( on );
+    accelADXL->setActivityZ( on );
+    
+    accelADXL->setInactivityAc( on );
+    accelADXL->setInactivityX( on );
+    accelADXL->setInactivityY( on );
+    accelADXL->setInactivityZ( on );
+
+    accelADXL->setAutoSleep( on );
+    
+    accelADXL->setInterrupt( 4, on );
+    accelADXL->setInterrupt( 3, on );
+  }
+#endif
+}
+
+void MiniBee_API::inactivityThresholdADXL( int activTH, int inactivTH, int timeTH ){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
+  if ( accelADXL != NULL ){
+    accelADXL->setActivityThreshold( activTH );
+    accelADXL->setInactivityThreshold( inactivTH );
+    accelADXL->setTimeInactivity( timeTH );
+  }
+  adxlTHactive = activTH;
+  adxlTHinactive = inactivTH;
+  adxlTHtime = timeTH;
+#endif  
+}
+
+void MiniBee_API::standbyADXL(){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
+  // enable sleep of ADXL sensor
+  accelADXL->sleep();
+#endif
+}
+
+void MiniBee_API::wakeADXL(){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
+  // wake up ADXL sensor
+  accelADXL->wake();
+#endif
+}
+
+#endif // TWI
 
 
 #if MINIBEE_ENABLE_SHT == 1
