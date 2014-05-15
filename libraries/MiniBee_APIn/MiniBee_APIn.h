@@ -178,6 +178,7 @@ class MiniBee_API{
     void standbyADXL();
     void wakeADXL();
     void enableAutoSleepADXL( bool );
+    byte getInterruptSourceADXL();
     bool isAsleepADXL();
     void inactivityThresholdADXL( int activTH, int inactivTH, int timeTH );
 #endif

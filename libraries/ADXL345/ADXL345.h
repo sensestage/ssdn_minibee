@@ -108,7 +108,7 @@ public:
   void powerOn();
   void setAutoSleep( bool on );
   void setSleepSenseRate( int val );
-  void sleep();
+  void standby();
   void wake();
   void readAccel(int* xyx);
   void readAccel(int* x, int* y, int* z);

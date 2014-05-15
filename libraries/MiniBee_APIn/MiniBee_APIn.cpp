@@ -1314,6 +1314,13 @@ bool MiniBee_API::isAsleepADXL(){
   return false;
 }
 
+byte MiniBee_API::getInterruptSourceADXL(){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
+  return accelADXL->getInterruptSource(); // get interrupt source just to clear it
+#endif
+  return 0;
+}
+
 void MiniBee_API::enableAutoSleepADXL( bool on ){
 #if MINIBEE_ENABLE_TWI_ADXL == 1
   adxlShouldEnableSleep = on;
@@ -1353,7 +1360,7 @@ void MiniBee_API::inactivityThresholdADXL( int activTH, int inactivTH, int timeT
 void MiniBee_API::standbyADXL(){
 #if MINIBEE_ENABLE_TWI_ADXL == 1
   // enable sleep of ADXL sensor
-  accelADXL->sleep();
+  accelADXL->standby();
 #endif
 }
 

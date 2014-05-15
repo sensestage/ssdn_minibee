@@ -78,7 +78,7 @@ void ADXL345::setSleepSenseRate( int val ){
   writeTo(ADXL345_POWER_CTL, _s);
 }
 
-void ADXL345::sleep(){
+void ADXL345::standby(){
   byte _b;
   byte newval = 0; // measure off = standby
   readFrom(ADXL345_POWER_CTL, 1, &_b);
