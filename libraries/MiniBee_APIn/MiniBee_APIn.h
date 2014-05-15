@@ -114,11 +114,17 @@ class MiniBee_API{
     MiniBee_API();
     void setup( long, char, bool usedelay=true );
     void loopStep( bool usedelay = true );
+    
+    // if you use either of these, you should use measureOnly, readOnly, sendOnly in your loop to create a full loopstep
+    void loopMeasureOnly();
+    void loopSendOnly(bool usedelay = true); 
     void loopReadOnly();
     
     void setID( uint8_t id );
     uint8_t getId(void);
     
+    bool sendPrivateData( uint8_t * privateData, uint8_t datacount, bool checkStatus=true );
+    bool sendTriggerData( uint8_t * triggerData, uint8_t datacount, bool checkStatus=true );
     void sendData( void );
     void sendActive( void );
     void sendPaused( void );
@@ -132,7 +138,7 @@ class MiniBee_API{
     void wakeXBee();    
 
     uint8_t* sendAtCommand();
-    boolean sendTx16( char type, uint8_t* data, uint8_t length, bool checkStatus=true );
+    bool sendTx16( char type, uint8_t* data, uint8_t length, bool checkStatus=true );
     
     void (*customMsgFunc)( uint8_t *, uint8_t, uint16_t );// = NULL;
     void (*dataMsgFunc)( uint8_t *, uint8_t, uint16_t );// = NULL;

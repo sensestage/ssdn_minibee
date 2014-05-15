@@ -36,13 +36,15 @@
 #define S_CUSTOM 'E'
 		
 //node message types
-#define N_DATA 'd'
-#define N_SER 's'
-#define N_INFO 'i'
-#define N_WAIT 'w'
-#define N_CONF 'c'
 #define N_ACTIVE 'a'
+#define N_CONF 'c'
+#define N_DATA 'd'
+#define N_EXTRA 'e'
+#define N_INFO 'i'
 #define N_PAUSED 'p'
+#define N_SER 's'
+#define N_TRIGGER 't'
+#define N_WAIT 'w'
 
 // state machine for the MiniBee...
 #define STARTING 0
@@ -187,7 +189,19 @@ void MiniBee_API::loopReadOnly(){
 
 void MiniBee_API::loopStep( bool usedelay ){
   usingDelay = usedelay;
-  readXBeePacket();
+  loopReadOnly();
+  loopMeasureOnly();
+  loopSendOnly( usedelay );
+}
+
+void MiniBee_API::loopMeasureOnly(){
+  if ( status == SENSING ){
+    datacount = readSensors( datacount );  
+  }
+}
+
+void MiniBee_API::loopSendOnly( bool usedelay ){
+  usingDelay = usedelay;
   switch( status ){
     case STARTING:
       if ( usedelay ){ delay( 100 ); }
@@ -202,17 +216,14 @@ void MiniBee_API::loopStep( bool usedelay ){
       if ( actcount == 0 ){ // send the wait message every 10 seconds
 	msg_id_send++;
 	msg_id_send = msg_id_send%256;
-// 	sendTx16( N_WAIT, &config_id, 1 );
 	sendTx16( N_WAIT, configInfo, 2, usingDelay );
       }
       if ( usedelay ){ delay( 100 ); }
       break;
     case SENSING: // read sensors:
-      datacount = readSensors( datacount );
+//       datacount = readSensors( datacount );
       if ( curSample >= samplesPerMsg ){
 	sendData();
-// 	curSample = 0;
-// 	datacount = 0;
       }
       if ( usedelay ){ delay( smpInterval ); }
       break;
@@ -257,7 +268,11 @@ void MiniBee_API::dataFromLong24( unsigned long output, int offset ){
 
 uint8_t MiniBee_API::readSensors( uint8_t db ){
     unsigned int value;
-
+    
+    if ( samplesPerMsg == 1 ){
+      curSample = 0;
+      datacount = 0;
+    }
     //--------- read digital sensors ---------- (0 - 3 bytes in total)
 
     uint8_t newdigital = 0;
@@ -331,8 +346,35 @@ uint8_t MiniBee_API::readSensors( uint8_t db ){
 
 //end TODO: check/
 
+
+bool MiniBee_API::sendPrivateData( uint8_t * privateData, uint8_t datacount, bool checkStatus ){
+    bool result = false;
+    byte count = 0;
+    msg_id_send++;
+    msg_id_send = msg_id_send%256;
+    
+    while ( !result && count < 3 ){ // try to send max. three times
+      result = sendTx16( N_EXTRA, privateData, datacount, checkStatus );
+      count++;
+    }
+    return result;
+}
+
+bool MiniBee_API::sendTriggerData( uint8_t * triggerData, uint8_t datacount, bool checkStatus ){
+    bool result = false;
+    byte count = 0;
+    msg_id_send++;
+    msg_id_send = msg_id_send%256;
+    
+    while ( !result && count < 3 ){ // try to send max. three times
+      result = sendTx16( N_TRIGGER, triggerData, datacount, checkStatus );
+      count++;
+    }
+    return result;
+}
+
 void MiniBee_API::sendData(void){
-  boolean result = false;
+  bool result = false;
   byte count = 0;
     msg_id_send++;
     msg_id_send = msg_id_send%256;
@@ -341,7 +383,6 @@ void MiniBee_API::sendData(void){
       result = sendTx16( N_DATA, outData, datacount, usingDelay );
       count++;
     }
-      //     datacount = 0;
     curSample = 0;
     datacount = 0;
 }
@@ -371,7 +412,7 @@ void MiniBee_API::sendPaused(void){
 void MiniBee_API::readXBeePacket(){
   uint8_t option = 0;
   uint8_t *data;
-  uint8_t datasize = 0;
+  uint8_t xbdatasize = 0;
   uint8_t recvMsgType;
   uint16_t source;
   
@@ -384,18 +425,18 @@ void MiniBee_API::readXBeePacket(){
 	xbee.getResponse().getRx16Response(rx16);
         option = rx16.getOption();
 	source = rx16.getRemoteAddress16();
-	datasize = rx16.getDataLength();
+	xbdatasize = rx16.getDataLength();
         data = rx16.getData();
 	recvMsgType = rx16.getData(0);
       } else {
         xbee.getResponse().getRx64Response(rx64);
 	option = rx64.getOption();
 	source = 0; // kind of a hack(?) -> could filter according to 64bit address
-	datasize = rx64.getDataLength();
+	xbdatasize = rx64.getDataLength();
         data = rx64.getData();
 	recvMsgType = rx64.getData(0);
       }
-      routeMsg( recvMsgType, data, datasize, source );
+      routeMsg( recvMsgType, data, xbdatasize, source );
       // TODO check option, rssi bytes    
 //       flashLed(STATUS_LED, 1, 10);
 //     } else { // not something we were expecting
@@ -1039,7 +1080,7 @@ void MiniBee_API::setDestination( uint16_t addr ){
     txs16.setAddress16( destination );
 }
 
-boolean MiniBee_API::sendTx16( char type, uint8_t* data, uint8_t length, bool checkStatus ){
+bool MiniBee_API::sendTx16( char type, uint8_t* data, uint8_t length, bool checkStatus ){
   payload[0] = (uint8_t) type;
 //   payload[1] = node_id;
   payload[1] = msg_id_send;
@@ -1056,31 +1097,24 @@ boolean MiniBee_API::sendTx16( char type, uint8_t* data, uint8_t length, bool ch
 
   if ( checkStatus ){
     cbi( PIND, STATUS_LED );
-//    digitalWrite( STATUS_LED, 0 );
     // after sending a tx request, we expect a status response
     // wait up to 20 milliseconds for the status response
     if (xbee.readPacket( 10 )) { // got a response!
 	// should be a znet tx status            	
 	if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
 	  xbee.getResponse().getTxStatusResponse(txStatus);
-		
 	  // get the delivery status, the fifth byte
 	  if (txStatus.getStatus() != SUCCESS) {
 		// success.  time to celebrate
-// 		flashLed(STATUS_LED, 5, 50);
 // 	  } else {
 		// the remote XBee did not receive our packet. is it powered on?
-// 		flashLed(STATUS_LED, 3, 50);
 	    sbi( PIND, STATUS_LED );
-// 	    digitalWrite( STATUS_LED, 1 );
 	    return false;
 	  }
 	}      
     } else {
       // local XBee did not provide a timely TX Status Response -- should not happen
-//       flashLed(STATUS_LED, 3, 50);
 	sbi( PIND, STATUS_LED );
-// 	digitalWrite( STATUS_LED, 1 );
 	return false;
     }
   }
