@@ -62,6 +62,8 @@ void setup() {
   
   // if you generate data without a pin associated, set the pin number to 0.
   // Bee.setCustomPin( 0, 2 );
+  // if you generate data without a pin associated, use setCustomInput
+//   Bee.setCustomInput( 1, 1 ); //uint8_t noInputs, uint8_t size );
 }
 
 void loop() {
