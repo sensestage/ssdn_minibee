@@ -181,6 +181,7 @@ class MiniBee_API{
     int readTWIdevices(int dboff);
     void setupTWIdevices(void);
 
+    void initADXL();
     void standbyADXL();
     void wakeADXL();
     void enableAutoSleepADXL( bool );

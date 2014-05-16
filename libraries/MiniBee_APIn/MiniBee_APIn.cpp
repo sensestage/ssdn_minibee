@@ -1340,6 +1340,25 @@ int MiniBee_API::readTWIdevices( int dboff ){
 	return dbplus;
 }
 
+void MiniBee_API::initADXL(){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
+  if ( accelADXL != NULL ){
+      free( accelADXL );
+      accelADXL = NULL;
+  }
+  accelADXL = (ADXL345*) malloc( sizeof( ADXL345 ) );
+  accelADXL->init();
+  accelADXL->powerOn();
+  accelADXL->setJustifyBit( false );
+  accelADXL->setFullResBit( true );
+  accelADXL->setRangeSetting( 16 ); // 2: 2g, 4: 4g, 8: 8g, 16: 16g
+  if ( adxlShouldEnableSleep ){
+      inactivityThresholdADXL( adxlTHactive, adxlTHinactive, adxlTHtime );
+      enableAutoSleepADXL( true );
+  }
+#endif  
+}
+
 bool MiniBee_API::isAsleepADXL(){
 #if MINIBEE_ENABLE_TWI_ADXL == 1
   // query activity of ADXL sensor
