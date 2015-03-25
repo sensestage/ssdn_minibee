@@ -57,6 +57,8 @@ void customMsgParser( uint8_t * msg, uint8_t size, uint16_t source ){
   }
 }
 
+// osc message from software: /minibee/custom minibeeid highbyte lowbyte
+
 void setup() {
   myservo.attach( SERVOPIN );  // attaches the servo on pin 9 to the servo object 
 
