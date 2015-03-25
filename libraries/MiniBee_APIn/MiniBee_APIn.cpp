@@ -128,8 +128,9 @@ MiniBee_API::MiniBee_API(){
 #if MINIBEE_ENABLE_TWI == 1
   twiOn = false;
 
-  #if MINIBEE_ENABLE_TWI_ADXL == 1
+#if MINIBEE_ENABLE_TWI_ADXL == 1
 	accelADXL = NULL;
+	adxlShouldEnableSleep = false;
 #endif
 #if MINIBEE_ENABLE_TWI_LISDL == 1
 	accelLIS = NULL;
@@ -269,10 +270,10 @@ void MiniBee_API::dataFromLong24( unsigned long output, int offset ){
 uint8_t MiniBee_API::readSensors( uint8_t db ){
     unsigned int value;
     
-    if ( samplesPerMsg == 1 ){
-      curSample = 0;
-      datacount = 0;
-    }
+//     if ( samplesPerMsg == 1 ){ // this conflicts with addCustomData!
+//       curSample = 0;
+//       datacount = 0;
+//     }
     //--------- read digital sensors ---------- (0 - 3 bytes in total)
 
     uint8_t newdigital = 0;
@@ -838,7 +839,7 @@ void MiniBee_API::parseConfig(void){
 #endif
 	
   datacount = 0;
-  datasize += customDataSize;
+  datasize = datasize + customDataSize;
 
 #if MINIBEE_ENABLE_TWI == 1
   if ( twiOn ){
@@ -894,7 +895,7 @@ void MiniBee_API::setCustomPin( uint8_t id, uint8_t size ){
 	custom_pin[ id-PINOFFSET ] = true;
 	custom_size[ id-PINOFFSET ] = size;
     } // id's smaller than PINOFFSET allow for custom data without pin associated
-    customDataSize += size;
+    customDataSize = customDataSize + ( (int) size );
     
     hasCustom = true;
     if ( size > 0 ){ hasInput = true; }
@@ -902,7 +903,7 @@ void MiniBee_API::setCustomPin( uint8_t id, uint8_t size ){
 
 void MiniBee_API::setCustomInput( uint8_t noInputs, uint8_t size ){
     customInputs += noInputs;
-    customDataSize += noInputs * size;
+    customDataSize = customDataSize + ( (int) (noInputs * size) );
 
     hasCustom = true;
     if ( size > 0 ){ hasInput = true; }
@@ -1072,7 +1073,7 @@ void MiniBee_API::sendXBeeSerial(){
 /// 1 byte with data of capabilities that may be commented out in the firmware lib...
   serial[10] = MINIBEE_ENABLE_PING*4 + MINIBEE_ENABLE_SHT*2 + MINIBEE_ENABLE_TWI;
   serial[11] = remoteConfig;
-  sendTx16( N_SER, serial, 11, usingDelay );
+  sendTx16( N_SER, serial, 12, usingDelay );
 }
 
 void MiniBee_API::setDestination( uint16_t addr ){

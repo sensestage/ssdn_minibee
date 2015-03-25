@@ -37,7 +37,7 @@
 
 
 // #define MINIBEE_REVISION 'D'
-#define MINIBEE_LIBVERSION 6
+#define MINIBEE_LIBVERSION 7
 
 /// all together: 3644 bytes
 #define MINIBEE_ENABLE_TWI 1  /// TWI/I2C takes up 2064 bytes
@@ -285,7 +285,7 @@ class MiniBee_API{
     bool digital_in[19]; 
     bool analog_in[8];
     uint8_t custom_size[19]; // sets size of custom pin data
-    uint8_t customDataSize;
+    int customDataSize;
     uint8_t customInputs;
     
     bool analog_precision[8]; 
