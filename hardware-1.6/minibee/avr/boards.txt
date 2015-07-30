@@ -1,0 +1,65 @@
+menu.cpu=Processor
+
+##############################################################
+
+minibee.name=Sense Stage MiniBee
+minibee.upload.tool=avrdude
+minibee.upload.protocol= stk500
+
+minibee.bootloader.tool=avrdude
+minibee.bootloader.unlock_bits=0x3F
+minibee.bootloader.lock_bits=0x0F
+
+minibee.build.core=minibee
+minibee.build.variant=minibee
+minibee.build.cppoption1=-fno-use-cxa-atexit
+
+## Sense Stage MiniBee revD1 (3.3V, 12 MHz) w/ ATmega328
+## -------------------------
+minibee.menu.cpu.atmega328=ATmega328 revD1 (3.3V, 12 MHz)
+
+minibee.menu.cpu.atmega328.upload.maximum_size=30720
+minibee.menu.cpu.atmega328.upload.maximum_data_size=2048
+minibee.menu.cpu.atmega328.upload.speed=57600
+
+minibee.menu.cpu.atmega328.bootloader.low_fuses=0xFF
+minibee.menu.cpu.atmega328.bootloader.high_fuses=0xDA
+minibee.menu.cpu.atmega328.bootloader.extended_fuses=0x05
+minibee.menu.cpu.atmega328.bootloader.file=minibee/ATmegaBOOT_168_minibee_12MHz.hex
+
+minibee.menu.cpu.atmega328.build.mcu=atmega328
+minibee.menu.cpu.atmega328.build.f_cpu=12000000L
+
+## Sense Stage MiniBee revB/D (3.3V, 12 MHz) w/ ATmega328p
+## -------------------------
+minibee.menu.cpu.atmega328p=ATmega328p revB/D (3.3V, 12 MHz)
+
+minibee.menu.cpu.atmega328p.upload.maximum_size=30720
+minibee.menu.cpu.atmega328p.upload.maximum_data_size=2048
+minibee.menu.cpu.atmega328p.upload.speed=57600
+
+minibee.menu.cpu.atmega328p.bootloader.low_fuses=0xFF
+minibee.menu.cpu.atmega328p.bootloader.high_fuses=0xDA
+minibee.menu.cpu.atmega328p.bootloader.extended_fuses=0x05
+minibee.menu.cpu.atmega328p.bootloader.file=minibee/ATmegaBOOT_168_minibee_12MHz.hex
+
+minibee.menu.cpu.atmega328p.build.mcu=atmega328p
+minibee.menu.cpu.atmega328p.build.f_cpu=12000000L
+
+## Sense Stage MiniBee revA (3.3V, 8 MHz) w/ ATmega168
+## -------------------------
+minibee.menu.cpu.atmega168=ATmega168 revA (3.3V, 8 MHz)
+
+minibee.menu.cpu.atmega168.upload.maximum_size=14336
+minibee.menu.cpu.atmega168.upload.maximum_data_size=1024
+minibee.menu.cpu.atmega168.upload.speed=19200
+
+minibee.menu.cpu.atmega168.bootloader.low_fuses=0xE2
+minibee.menu.cpu.atmega168.bootloader.high_fuses=0xDD
+minibee.menu.cpu.atmega168.bootloader.extended_fuses=0x00
+minibee.menu.cpu.atmega168.bootloader.file=minibee/ATmegaBOOT_168_minibee_8MHz.hex
+
+minibee.menu.cpu.atmega168.build.mcu=atmega168
+minibee.menu.cpu.atmega168.build.f_cpu=12000000L
+
+##############################################################
