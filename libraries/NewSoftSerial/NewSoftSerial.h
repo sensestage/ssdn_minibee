@@ -31,6 +31,12 @@ http://arduiniana.org.
 #include <inttypes.h>
 #include "Print.h"
 
+// #if defined(ARDUINO) && ARDUINO >= 100
+// #include <Arduino.h>
+// #else
+// #include <WProgram.h>
+// #endif
+
 /******************************************************************************
 * Definitions
 ******************************************************************************/
@@ -68,7 +74,8 @@ private:
   // private methods
   void recv();
   bool activate();
-  virtual void write(uint8_t byte);
+//   virtual void write(uint8_t byte);
+//   virtual size_t write(uint8_t byte);
   uint8_t rx_pin_read();
   void tx_pin_write(uint8_t pin_state);
   void setTX(uint8_t transmitPin);
@@ -78,6 +85,8 @@ private:
   static inline void tunedDelay(uint16_t delay);
 
 public:
+  virtual size_t write(uint8_t byte);
+
   // public methods
   NewSoftSerial(uint8_t receivePin, uint8_t transmitPin, bool inverse_logic = false);
   ~NewSoftSerial();

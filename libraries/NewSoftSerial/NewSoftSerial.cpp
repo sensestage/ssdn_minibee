@@ -36,7 +36,15 @@ http://arduiniana.org.
 // 
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
-#include "WConstants.h"
+
+#if defined(ARDUINO) && ARDUINO >= 100
+#include <Arduino.h>
+#else
+#include <WConstants.h>
+// #include <WProgram.h>
+#endif
+
+
 #include "pins_arduino.h"
 #include "NewSoftSerial.h"
 
@@ -157,7 +165,7 @@ const int XMIT_START_ADJUSTMENT = 5;
 
 #else
 
-#error This version of NewSoftSerial supports only 20, 16 and 8MHz processors
+#error This version of NewSoftSerial supports only 20, 16, 12 and 8MHz processors
 
 #endif
 
@@ -511,10 +519,11 @@ uint8_t NewSoftSerial::available(void)
   return (_receive_buffer_tail + _NewSS_MAX_RX_BUFF - _receive_buffer_head) % _NewSS_MAX_RX_BUFF;
 }
 
-void NewSoftSerial::write(uint8_t b)
+// void NewSoftSerial::write(uint8_t b)
+size_t NewSoftSerial::write(uint8_t b)
 {
   if (_tx_delay == 0)
-    return;
+    return 0;
 
   activate();
 
@@ -557,6 +566,7 @@ void NewSoftSerial::write(uint8_t b)
 
   SREG = oldSREG; // turn interrupts back on
   tunedDelay(_tx_delay);
+  return 1;
 }
 
 #if !defined(cbi)
