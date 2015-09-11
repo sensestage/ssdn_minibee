@@ -508,12 +508,16 @@ void MiniBee_API::routeMsg(uint8_t type, uint8_t *msg, uint8_t size, uint16_t so
 		}
 	    }
 	    if ( serialCorrect ){
-	      node_id = msg[10];
-	      config_id = msg[11]; // config id is msg[8]
-	      status = WAITFORCONFIG;
-	      configInfo[0] = node_id;
-	      configInfo[1] = config_id;
-	      sendTx16( N_WAIT, configInfo, 2, usingDelay );
+	      if ( remoteConfig > 1 ){ // has a remote configuration
+		node_id = msg[10];
+		config_id = msg[11]; // config id is msg[8]
+		status = WAITFORCONFIG;
+		configInfo[0] = node_id;
+		configInfo[1] = config_id;
+		sendTx16( N_WAIT, configInfo, 2, usingDelay );
+	      } else { // has a local configuration
+		sendConfigSummary(); // parse the local configuration, and confirm
+	      }
 // 	      } else if ( size < 8 ) { // no new config
 // 		readConfig();
 //   		status = SENSING;
@@ -532,6 +536,7 @@ void MiniBee_API::routeMsg(uint8_t type, uint8_t *msg, uint8_t size, uint16_t so
 // 	      writeConfig( msg, size );
 // 	      readConfig();
 	      readConfigMsg( msg, size );
+	      sendConfigSummary();
 	    }
 	  }
 	}
@@ -610,13 +615,6 @@ void MiniBee_API::readConfigMsg(uint8_t *msg, uint8_t size){
 	}
 	parseConfig();
 	free(config);
-	if ( hasInput ){
-	  status = SENSING;
-	} else if ( hasOutput | hasCustom ){
-	  actcount = 0;
-	  status = ACTING;
-	  sendActive();
-	}
 }
 
 bool MiniBee_API::isIOPin( uint8_t id ){
@@ -675,7 +673,7 @@ void MiniBee_API::parseConfig(void){
 //   uint8_t iopin;
   uint8_t cfpin;
 //   uint8_t pin = 0;
-  uint8_t datasizeout = 0;
+  datasizeout = 0;
   datasize = 0;
 
   config_id = config[0];
@@ -855,6 +853,18 @@ void MiniBee_API::parseConfig(void){
 #endif
   // no need to setup ping
 
+  dataBaseSize = datasize;
+  sendConfigSummary();
+
+  datasize = datasize * samplesPerMsg;
+
+  outData = (uint8_t*)malloc(sizeof(uint8_t) * datasize);
+
+// 	outMessage = (char*)malloc( sizeof(char) * (datasize + 2 ) );
+// 	data = outMessage + 2*sizeof(char); // not sure if this is correct... test!!
+}
+
+void MiniBee_API::sendConfigSummary(void){
   uint8_t confSize = 9;
   uint8_t * configInfoN = (uint8_t*)malloc( sizeof(uint8_t) * (19*2 + confSize) );
   configInfoN[0] = node_id;
@@ -862,7 +872,7 @@ void MiniBee_API::parseConfig(void){
   configInfoN[2] = samplesPerMsg;
   configInfoN[3] = (uint8_t) (msgInterval/256);
   configInfoN[4] = (uint8_t) (msgInterval%256);
-  configInfoN[5] = datasize;
+  configInfoN[5] = dataBaseSize;
   configInfoN[6] = datasizeout;
   configInfoN[7] = customInputs;
   configInfoN[8] = customDataSize;
@@ -874,14 +884,16 @@ void MiniBee_API::parseConfig(void){
     }
   }
   sendTx16( N_CONF, configInfoN, confSize, usingDelay );
-  free( configInfoN );
+  free( configInfoN );  
+  
+  if ( hasInput ){
+    status = SENSING;
+  } else if ( hasOutput | hasCustom ){
+    actcount = 0;
+    status = ACTING;
+    sendActive();
+  }
 
-  datasize = datasize * samplesPerMsg;
-
-  outData = (uint8_t*)malloc(sizeof(uint8_t) * datasize);
-
-// 	outMessage = (char*)malloc( sizeof(char) * (datasize + 2 ) );
-// 	data = outMessage + 2*sizeof(char); // not sure if this is correct... test!!
 }
 
 void MiniBee_API::setCustomPins( uint8_t * ids, uint8_t * sizes, uint8_t n  ){

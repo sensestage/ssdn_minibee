@@ -245,6 +245,8 @@ class MiniBee_API{
     
     void flashLed(int pin, int times, int wait);
     
+    void sendConfigSummary();
+    
     char msg_type;
     uint8_t status;
     uint8_t actcount;
@@ -255,6 +257,9 @@ class MiniBee_API{
     uint8_t *outData;
     int datacount;
     int datasize;
+    
+    uint8_t datasizeout;
+    int dataBaseSize;
     
     uint8_t node_id; // TODO: should this be a uint16_t instead?
     uint8_t config_id;
