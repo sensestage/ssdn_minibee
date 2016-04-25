@@ -69,7 +69,7 @@ AtCommandResponse atResponse = AtCommandResponse();
 
 XBee xbee = XBee();
 
-#define MAX_PAYLOAD 61
+#define MAX_PAYLOAD 81
 #define COORD_ADDR 0x0000
 
 uint8_t payload[MAX_PAYLOAD+3]; //, 0x40,0x6A,0x69,0xAB };
@@ -265,6 +265,15 @@ void MiniBee_API::dataFromLong24( unsigned long output, int offset ){
     output = output % 65536; // 16 bits
     outData[offset+1] = byte(output / 256);
     outData[offset+2] = byte(output % 256);
+}
+
+void MiniBee_API::dataFromLong( long output, int offset ){
+//     output = output % 16777216; // 24 bits
+    outData[offset]   = byte( output >> 24 );
+    outData[offset+1]   = byte( output >> 16 );
+//     output = output % 65536; // 16 bits
+    outData[offset+2] = byte(output >> 8 );
+    outData[offset+3] = byte(output % 256);
 }
 
 uint8_t MiniBee_API::readSensors( uint8_t db ){
@@ -954,6 +963,15 @@ void MiniBee_API::addCustomData( uint16_t * cdata, uint8_t n ){
 	for ( uint8_t i=0; i<n; i++){
 	  dataFromUInt( cdata[i], datacount );
 	  datacount += 2;  
+	}
+    }
+}
+
+void MiniBee_API::addCustomData( long * cdata, uint8_t n ){
+    if ( status == SENSING ){
+	for ( uint8_t i=0; i<n; i++){
+	  dataFromLong( cdata[i], datacount );
+	  datacount += 4;  
 	}
     }
 }

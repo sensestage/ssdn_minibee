@@ -157,6 +157,7 @@ class MiniBee_API{
     void addCustomData( char * cdata, uint8_t n );
     void addCustomData( int * cdata, uint8_t n );
     void addCustomData( uint16_t * cdata, uint8_t n );
+    void addCustomData( long * cdata, uint8_t n );
     
     
     void setRunning( uint8_t ); 
@@ -231,6 +232,7 @@ class MiniBee_API{
     void dataFromInt( unsigned int output, int offset );
     void dataFromUInt( uint16_t output, int offset );
     void dataFromLong24( unsigned long output, int offset );
+    void dataFromLong( long output, int offset );
 
     uint8_t readSensors( uint8_t db );
     
