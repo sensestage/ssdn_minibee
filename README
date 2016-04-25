@@ -4,7 +4,7 @@ For revision A (only in possession of a few early testers), you can select to us
 
 - Unarchive the package.
 - In there you will find a folder called “hardware”.
-- Copy the folder (including all the contents) to the root of your Arduino Sketch folder. If you have already a “hardware” folder in there, then copy the “minibee” folder that is in the downloaded package’s “hardware” folder to it. If you use the IDE >= 1.6.1, copy files in folder "hardware-1.6" to your "hardware" folder.
+- Copy the folder (including all the contents) to the root of your Arduino Sketch folder. If you have already a “hardware” folder in there, then copy the “minibee” folder that is in the downloaded package’s “hardware” folder to it.
 - You will also find a folder called “libraries” in the downloaded package.
 - Copy the folder (including all the contents) to the root of your Arduino Sketch folder. If you have already a “libraries” folder in there, then copy the “MiniBee” folder that is in the downloaded package’s “libraries” folder to it.
 - (Re)start the Arduino IDE.
