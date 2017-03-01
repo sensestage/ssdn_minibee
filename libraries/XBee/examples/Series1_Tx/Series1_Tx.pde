@@ -65,8 +65,8 @@ void flashLed(int pin, int times, int wait) {
 void setup() {
   pinMode(statusLed, OUTPUT);
   pinMode(errorLed, OUTPUT);
-  
-  xbee.begin(9600);
+  Serial.begin(9600);
+  xbee.setSerial(Serial);
 }
 
 void loop() {
@@ -91,7 +91,7 @@ void loop() {
 
         // should be a znet tx status            	
     	if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
-    	   xbee.getResponse().getZBTxStatusResponse(txStatus);
+    	   xbee.getResponse().getTxStatusResponse(txStatus);
     		
     	   // get the delivery status, the fifth byte
            if (txStatus.getStatus() == SUCCESS) {
@@ -102,8 +102,12 @@ void loop() {
              	flashLed(errorLed, 3, 500);
            }
         }      
+    } else if (xbee.getResponse().isError()) {
+      //nss.print("Error reading packet.  Error code: ");  
+      //nss.println(xbee.getResponse().getErrorCode());
+      // or flash error led
     } else {
-      // local XBee did not provide a timely TX Status Response -- should not happen
+      // local XBee did not provide a timely TX Status Response.  Radio is not configured properly or connected
       flashLed(errorLed, 2, 50);
     }
     
