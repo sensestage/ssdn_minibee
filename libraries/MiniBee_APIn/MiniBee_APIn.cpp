@@ -168,7 +168,9 @@ void MiniBee_API::setup( long baud_rate, char boardrev, bool usedelay ) {
   pinMode( xbee_sleep_pin, OUTPUT );
   digitalWrite(  xbee_sleep_pin, 0 );
   
-  xbee.begin(baud_rate);
+  
+  Serial.begin(baud_rate);
+  xbee.setSerial(Serial);
   
   delay( 500 );
   
