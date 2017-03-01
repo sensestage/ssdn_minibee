@@ -37,7 +37,7 @@
 
 
 // #define MINIBEE_REVISION 'D'
-#define MINIBEE_LIBVERSION 7
+#define MINIBEE_LIBVERSION 8
 
 /// all together: 3644 bytes
 #define MINIBEE_ENABLE_TWI 1  /// TWI/I2C takes up 2064 bytes
@@ -225,6 +225,8 @@ class MiniBee_API{
     bool usingDelay;
     void setMeLed( uint8_t );
     uint8_t me_status;
+    
+    uint8_t xbee_sleep_pin;
     
     uint16_t destination;
     

@@ -1,6 +1,6 @@
 ##############################################################
 
-minibeep.name=Sense Stage MiniBee revB/D (3.3V, 12 MHz) w/ ATmega328p
+minibeep.name=Sense Stage MiniBee revB/D/F (3.3V, 12 MHz) w/ ATmega328p
 
 minibeep.upload.protocol= stk500
 minibeep.upload.maximum_size=30720

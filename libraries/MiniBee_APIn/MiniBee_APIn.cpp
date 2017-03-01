@@ -19,7 +19,8 @@
 
 #include "MiniBee_APIn.h"
 
-#define XBEE_SLEEP_PIN 2
+// #define XBEE_SLEEP_PIN 2
+
 #define STATUS_LED 4
 
 	//server message types
@@ -158,8 +159,14 @@ void MiniBee_API::setup( long baud_rate, char boardrev, bool usedelay ) {
   
   pinMode(STATUS_LED, OUTPUT);
   
-  pinMode( XBEE_SLEEP_PIN, OUTPUT );
-  digitalWrite(  XBEE_SLEEP_PIN, 0 );
+  if ( board_revision == 'F' ){
+      xbee_sleep_pin = 7;
+  } else {
+      xbee_sleep_pin = 2;
+  }
+  
+  pinMode( xbee_sleep_pin, OUTPUT );
+  digitalWrite(  xbee_sleep_pin, 0 );
   
   xbee.begin(baud_rate);
   
@@ -175,11 +182,11 @@ void MiniBee_API::setup( long baud_rate, char boardrev, bool usedelay ) {
 }
 
 void MiniBee_API::sleepXBee(){
-  digitalWrite(  XBEE_SLEEP_PIN, 1 );
+  digitalWrite(  xbee_sleep_pin, 1 );
 }
 
 void MiniBee_API::wakeXBee(){
-  digitalWrite(  XBEE_SLEEP_PIN, 0 );  
+  digitalWrite(  xbee_sleep_pin, 0 );  
 }
 
 // TODO: check:
@@ -297,7 +304,11 @@ uint8_t MiniBee_API::readSensors( uint8_t db ){
 	      outData[db] = newdigital;
 	      db++;
 	  }
-	  newdigital += digitalRead( i + PINOFFSET ) << ( bitj++ );
+	  if ( (board_revision == 'F') && (i == 4 ) ){ // pin D7 in config is D2 for revision F
+            newdigital += digitalRead( 2 ) << ( bitj++ );
+          } else {
+            newdigital += digitalRead( i + PINOFFSET ) << ( bitj++ );
+          }
 	}
     }
 
@@ -599,7 +610,11 @@ void MiniBee_API::setOutput(){
   } 
   for( uint8_t i=0; i<nrpins; i++){
     if ( digital_out[i] ){
-      digitalWrite( i+PINOFFSET, digital_values[i] );
+      if ( (board_revision == 'F') && (i == 4 ) ){ // pin D7 in config is D2 for revision F        
+          digitalWrite( 2, digital_values[i] );
+      } else {
+          digitalWrite( i+PINOFFSET, digital_values[i] );
+      }
     }
   } 
 }
@@ -632,6 +647,7 @@ bool MiniBee_API::isIOPin( uint8_t id ){
     case 'A':
       break;
     case 'D':
+    case 'F':
       if ( id == 4  ) {
 	isvalid = false;
       }
@@ -661,6 +677,7 @@ bool MiniBee_API::isAnalogPin( uint8_t id ){
       break;
     case 'B':
     case 'D':
+    case 'F':
       if ( (anapin == 4) || (anapin == 5) ){
 	isvalid = false;
       }
@@ -698,6 +715,7 @@ void MiniBee_API::parseConfig(void){
     case 'A':
     case 'B':
     case 'D':
+    case 'F':
       nrpins = 19;
       break;
     case 'Z':
@@ -736,17 +754,30 @@ void MiniBee_API::parseConfig(void){
 	}
 	break;
       case DigitalIn:
-	pinMode( cfpin, INPUT );
+        if ( (board_revision == 'F') && (cfpin == 7 ) ){
+            pinMode( 2, INPUT );
+        } else {
+            pinMode( cfpin, INPUT );
+        }
 	digital_in[i] = true;
 	datasize += 1;
 	hasInput = true;
 	break;
       case DigitalInPullup:
 #if defined(ARDUINO) && ARDUINO >= 100
-	pinMode( cfpin, INPUT_PULLUP );
+        if ( (board_revision == 'F') && (cfpin == 7 ) ){
+            pinMode( 2, INPUT_PULLUP );
+        } else {
+            pinMode( cfpin, INPUT_PULLUP );
+        }
 #else
-	pinMode( cfpin, INPUT );
-	digitalWrite( cfpin, HIGH );
+        if ( (board_revision == 'F') && (cfpin == 7 ) ){
+            pinMode( 2, INPUT );
+            digitalWrite( 2, HIGH );
+        } else {
+            pinMode( cfpin, INPUT );
+            digitalWrite( cfpin, HIGH );
+        }
 #endif
 	digital_in[i] = true;
 	datasize += 1;
@@ -763,7 +794,11 @@ void MiniBee_API::parseConfig(void){
 	break;
       case DigitalOut:
 	digital_out[ i ] = true;
-	pinMode( cfpin , OUTPUT );
+        if ( (board_revision == 'F') && (cfpin == 7 ) ){
+            pinMode( 2, OUTPUT );
+        } else {
+            pinMode( cfpin , OUTPUT );
+        }        
 	datasizeout += 1;
 	hasOutput = true;
 	break;
@@ -791,7 +826,11 @@ void MiniBee_API::parseConfig(void){
 #if MINIBEE_ENABLE_PING == 1
       case Ping:
 	pingOn = true;
-	ping_pin = cfpin;
+        if ( (board_revision == 'F') && (cfpin == 7 ) ){        
+            ping_pin = 2;
+        } else {
+            ping_pin = cfpin;
+        }
 	datasize += 2;
 	hasInput = true;
 	break;
@@ -912,7 +951,10 @@ void MiniBee_API::setCustomPins( uint8_t * ids, uint8_t * sizes, uint8_t n  ){
 }
 
 void MiniBee_API::setCustomPin( uint8_t id, uint8_t size ){
-    if ( id >= PINOFFSET ){
+    if ( (board_revision == 'F') && (id == 2 ) ){    
+        custom_pin[ 4 ] - true; // this is pin D7 (which place D2 takes in the configuration setup)
+        custom_size[ 4 ] = size; // this is pin D7 (which place D2 takes in the configuration setup)
+    } else if ( id >= PINOFFSET ){
 	custom_pin[ id-PINOFFSET ] = true;
 	custom_size[ id-PINOFFSET ] = size;
     } // id's smaller than PINOFFSET allow for custom data without pin associated
