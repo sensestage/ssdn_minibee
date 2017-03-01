@@ -10,9 +10,27 @@ minibee.bootloader.tool=avrdude
 minibee.bootloader.unlock_bits=0x3F
 minibee.bootloader.lock_bits=0x0F
 
-minibee.build.core=minibee
+minibee.build.core=arduino:arduino
+## minibee.build.core=minibee
+minibee.build.board=AVR_UNO
 minibee.build.variant=minibee
 minibee.build.cppoption1=-fno-use-cxa-atexit
+
+## Sense Stage MiniBee revB/D/F (3.3V, 12 MHz) w/ ATmega328p
+## -------------------------
+minibee.menu.cpu.atmega328p=ATmega328p revB/D/F (3.3V, 12 MHz)
+
+minibee.menu.cpu.atmega328p.upload.maximum_size=30720
+minibee.menu.cpu.atmega328p.upload.maximum_data_size=2048
+minibee.menu.cpu.atmega328p.upload.speed=57600
+
+minibee.menu.cpu.atmega328p.bootloader.low_fuses=0xFF
+minibee.menu.cpu.atmega328p.bootloader.high_fuses=0xDA
+minibee.menu.cpu.atmega328p.bootloader.extended_fuses=0x05
+minibee.menu.cpu.atmega328p.bootloader.file=minibee/ATmegaBOOT_168_minibee_12MHz.hex
+
+minibee.menu.cpu.atmega328p.build.mcu=atmega328p
+minibee.menu.cpu.atmega328p.build.f_cpu=12000000L
 
 ## Sense Stage MiniBee revD1 (3.3V, 12 MHz) w/ ATmega328
 ## -------------------------
@@ -29,22 +47,6 @@ minibee.menu.cpu.atmega328.bootloader.file=minibee/ATmegaBOOT_168_minibee_12MHz.
 
 minibee.menu.cpu.atmega328.build.mcu=atmega328
 minibee.menu.cpu.atmega328.build.f_cpu=12000000L
-
-## Sense Stage MiniBee revB/D (3.3V, 12 MHz) w/ ATmega328p
-## -------------------------
-minibee.menu.cpu.atmega328p=ATmega328p revB/D (3.3V, 12 MHz)
-
-minibee.menu.cpu.atmega328p.upload.maximum_size=30720
-minibee.menu.cpu.atmega328p.upload.maximum_data_size=2048
-minibee.menu.cpu.atmega328p.upload.speed=57600
-
-minibee.menu.cpu.atmega328p.bootloader.low_fuses=0xFF
-minibee.menu.cpu.atmega328p.bootloader.high_fuses=0xDA
-minibee.menu.cpu.atmega328p.bootloader.extended_fuses=0x05
-minibee.menu.cpu.atmega328p.bootloader.file=minibee/ATmegaBOOT_168_minibee_12MHz.hex
-
-minibee.menu.cpu.atmega328p.build.mcu=atmega328p
-minibee.menu.cpu.atmega328p.build.f_cpu=12000000L
 
 ## Sense Stage MiniBee revA (3.3V, 8 MHz) w/ ATmega168
 ## -------------------------
