@@ -32,7 +32,7 @@ minibee.menu.cpu.atmega328p.bootloader.file=minibee/ATmegaBOOT_168_minibee_12MHz
 minibee.menu.cpu.atmega328p.build.mcu=atmega328p
 minibee.menu.cpu.atmega328p.build.f_cpu=12000000L
 
-## Sense Stage MiniBee revD1 (3.3V, 12 MHz) w/ ATmega328
+## Sense Stage MiniBee revD0 (3.3V, 12 MHz) w/ ATmega328
 ## -------------------------
 minibee.menu.cpu.atmega328=ATmega328 revD1 (3.3V, 12 MHz)
 
