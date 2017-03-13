@@ -1,12 +1,9 @@
 MiniBee libraries:
 
 MiniBee - version 4 of the MiniBee library; uses the XBee AT mode
-MiniBee_API - version 5 of the MiniBee library; uses the XBee API mode
+MiniBee_APIn - version 8 of the MiniBee library; uses the XBee API mode
 
 MBSerial - library for wired Arduinos that can be used with the pydonhive scripts
-
-MiniBee_libv2 - version 2 of the MiniBee library (old version)
-
 
 Dependencies (bundled with the package):
 
