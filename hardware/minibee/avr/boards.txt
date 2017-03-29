@@ -7,8 +7,8 @@ minibee.upload.tool=avrdude
 minibee.upload.protocol= arduino
 
 minibee.bootloader.tool=avrdude
-minibee.bootloader.unlock_bits=0x3F
-minibee.bootloader.lock_bits=0x0F
+minibee.bootloader.unlock_bits=0xFF
+minibee.bootloader.lock_bits=0xCF
 
 minibee.build.core=arduino:arduino
 ## minibee.build.core=minibee
@@ -26,7 +26,7 @@ minibee.menu.cpu.atmega328p.upload.speed=57600
 
 minibee.menu.cpu.atmega328p.bootloader.low_fuses=0xFF
 minibee.menu.cpu.atmega328p.bootloader.high_fuses=0xDA
-minibee.menu.cpu.atmega328p.bootloader.extended_fuses=0x05
+minibee.menu.cpu.atmega328p.bootloader.extended_fuses=0xFD
 minibee.menu.cpu.atmega328p.bootloader.file=minibee/ATmegaBOOT_168_minibee_12MHz.hex
 
 minibee.menu.cpu.atmega328p.build.mcu=atmega328p
@@ -42,7 +42,7 @@ minibee.menu.cpu.atmega328.upload.speed=57600
 
 minibee.menu.cpu.atmega328.bootloader.low_fuses=0xFF
 minibee.menu.cpu.atmega328.bootloader.high_fuses=0xDA
-minibee.menu.cpu.atmega328.bootloader.extended_fuses=0x05
+minibee.menu.cpu.atmega328.bootloader.extended_fuses=0xFD
 minibee.menu.cpu.atmega328.bootloader.file=minibee/ATmegaBOOT_168_minibee_12MHz.hex
 
 minibee.menu.cpu.atmega328.build.mcu=atmega328
