@@ -37,19 +37,19 @@
 
 
 // #define MINIBEE_REVISION 'D'
-#define MINIBEE_LIBVERSION 8
+#define MINIBEE_LIBVERSION 9
 
 /// all together: 3644 bytes
 #define MINIBEE_ENABLE_TWI 1  /// TWI/I2C takes up 2064 bytes
-#define MINIBEE_ENABLE_SHT 1  /// SHT takes up 1140 bytes
-#define MINIBEE_ENABLE_PING 1 /// Ping takes up 440 bytes
-// #define MINIBEE_ENABLE_OWI 1  /// One wire interface
+#define MINIBEE_ENABLE_SHT 0  /// SHT takes up 1140 bytes
+#define MINIBEE_ENABLE_PING 0 /// Ping takes up 440 bytes
+// #define MINIBEE_ENABLE_OWI 0  /// One wire interface
 
 #define MINIBEE_ENABLE_TWI_ADXL 1 /// 962 bytes - without: 18176
-#define MINIBEE_ENABLE_TWI_LISDL 1 /// 614 bytes - without: 18524
-#define MINIBEE_ENABLE_TWI_HMC 1 /// 1644 bytes - without: 17494 
-#define MINIBEE_ENABLE_TWI_BMP 1 /// 4182 bytes - without: 14956
-#define MINIBEE_ENABLE_TWI_TMP 1 /// 250 bytes - without: 18888
+#define MINIBEE_ENABLE_TWI_LISDL 0 /// 614 bytes - without: 18524
+#define MINIBEE_ENABLE_TWI_HMC 0 /// 1644 bytes - without: 17494 
+#define MINIBEE_ENABLE_TWI_BMP 0 /// 4182 bytes - without: 14956
+#define MINIBEE_ENABLE_TWI_TMP 0 /// 250 bytes - without: 18888
 
 #if MINIBEE_ENABLE_TWI == 1
 #include <Wire.h>
@@ -79,6 +79,15 @@
 // #if MINIBEE_ENABLE_OWI == 1
 //   #include <OneWire.h>
 // #endif
+
+// state machine for the MiniBee...
+#define STARTING 0
+#define SENSING 1
+#define WAITFORHOST 2
+#define WAITFORCONFIG 3
+#define ACTING 4
+#define PAUSING 5
+
 
 enum MiniBeePinConfig { 
   NotUsed,
@@ -119,6 +128,8 @@ class MiniBee_API{
     void loopMeasureOnly();
     void loopSendOnly(bool usedelay = true); 
     void loopReadOnly();
+    
+    uint8_t getStatus();
     
     void setID( uint8_t id );
     uint8_t getId(void);

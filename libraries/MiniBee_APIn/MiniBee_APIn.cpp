@@ -47,13 +47,6 @@
 #define N_TRIGGER 't'
 #define N_WAIT 'w'
 
-// state machine for the MiniBee...
-#define STARTING 0
-#define SENSING 1
-#define WAITFORHOST 2
-#define WAITFORCONFIG 3
-#define ACTING 4
-#define PAUSING 5
 
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
@@ -189,6 +182,10 @@ void MiniBee_API::sleepXBee(){
 
 void MiniBee_API::wakeXBee(){
   digitalWrite(  xbee_sleep_pin, 0 );  
+}
+
+uint8_t MiniBee_API::getStatus(){
+    return status;
 }
 
 // TODO: check:
