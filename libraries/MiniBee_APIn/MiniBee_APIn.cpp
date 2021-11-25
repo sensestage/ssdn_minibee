@@ -1347,7 +1347,7 @@ void MiniBee_API::setupTWIdevices(void){
 int MiniBee_API::readTWIdevices( int dboff ){
 	int dbplus = 0;
 	
-	int accx, accy, accz;
+//     int accx, accy, accz;
 	unsigned int accx2, accy2, accz2;
 	float bmpT, bmpA, bmpP;
 	unsigned long bmpConv;
@@ -1428,6 +1428,14 @@ int MiniBee_API::readTWIdevices( int dboff ){
 	    }
 	}
 	return dbplus;
+}
+
+void MiniBee_API::getADXLdata( int* x, int* y, int* z ){
+#if MINIBEE_ENABLE_TWI_ADXL == 1
+    *x = accx;
+    *y = accy;
+    *z = accz;
+#endif
 }
 
 void MiniBee_API::initADXL(){

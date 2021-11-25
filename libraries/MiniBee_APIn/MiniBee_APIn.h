@@ -37,7 +37,7 @@
 
 
 // #define MINIBEE_REVISION 'D'
-#define MINIBEE_LIBVERSION 9
+#define MINIBEE_LIBVERSION 10
 
 /// all together: 3644 bytes
 #define MINIBEE_ENABLE_TWI 1  /// TWI/I2C takes up 2064 bytes
@@ -194,6 +194,9 @@ class MiniBee_API{
     int readTWIdevices(int dboff);
     void setupTWIdevices(void);
 
+#if MINIBEE_ENABLE_TWI_ADXL == 1
+    
+    void getADXLdata( int* x, int* y, int* z );
     void initADXL();
     void standbyADXL();
     void wakeADXL();
@@ -201,6 +204,8 @@ class MiniBee_API{
     byte getInterruptSourceADXL();
     bool isAsleepADXL();
     void inactivityThresholdADXL( int activTH, int inactivTH, int timeTH );
+#endif
+    
 #endif
 
 #if MINIBEE_ENABLE_SHT == 1
@@ -349,6 +354,7 @@ class MiniBee_API{
       int adxlTHactive;
       int adxlTHinactive;
       int adxlTHtime;
+      int accx, accy, accz;
     #endif
     #if MINIBEE_ENABLE_TWI_LISDL == 1
       LIS302DL * accelLIS;
